@@ -1,36 +1,81 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
-## Getting Started
+## Project Overview
 
-First, run the development server:
+A neighborhood/City based platform where users can find local service providers (electrician, plumbers, mechanics, technicians) and confirm completed jobs, as well as rate reliability, punctuality, and pricing honesty. Over time, each service provider earns a trust score based on real work, not fake online reviews.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## Core User Roles
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Regular User:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- Search for service providers
+- Views trust scores
+- Confirms a completed job
+- Leaves a rating
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### Service Provider:
 
-## Learn More
+- Has a profile
+- Offers services
+- Accumulates trust score (based on the rating and pricing of the job)
 
-To learn more about Next.js, take a look at the following resources:
+## MVP (Minimum Viable Product)
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### Discovery:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- List of service providers
+- Filter by service type (plumber, electrician, etc.)
+- Location-based search
+- Profile page for the provider
 
-## Deploy on Vercel
+### Trust Score System:
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- Rating (Reliability, Punctuality, Price Honesty)
+- Average trust score (Trust score is calculated as an average (or weighted average) of these ratings)
+- Number of completed jobs
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### Job Confirmation
+
+- User confirms a job when completed
+- Rating can only be left after confirmation
+
+## Technical Scope
+
+- Framework: Next.js
+- Routing: File-based routing
+- Styling: CSS / Tailwind / UI library
+- Backend: Next.js API routes
+- Database: MonogoDB
+
+## Features
+
+### Home Page
+
+- What the platform does
+- Search for services/ providers
+
+### Services Page
+
+- Contains the list of service providers (Cards that displays brief info about the provider and takes you to their profile upon clicking on it)
+- Has Categories: Electrician, Plumber, etc.
+
+### Provider Profile Page
+
+- Name
+- Contact info.
+- Service type
+- Location (City, neighborhood)
+- Trust score
+- Job history
+- Reviews (optional)
+
+### Confirm Job Page
+
+- Select the provider
+- Confirm the job completion
+- Add rating
+
+### Reviews & Feedback:
+
+- Users can submit a review for a provider
+- Review includes a text comment
+- Reviews are displayed on the provider’s profile page
