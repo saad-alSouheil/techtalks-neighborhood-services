@@ -1,8 +1,53 @@
-//Footer
-export default function Footer(){
+"use client";
+
+import { Phone, Email, Notifications } from "@mui/icons-material";
+import { useState } from "react";
+
+export default function Footer() {
+  const [email, setEmail] = useState("");
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setEmail("");
+  };
+
   return (
-    <footer style={{ padding: 16, textAlign: "center", color: "#666"}}>
-      My Local Service footer
+    <footer className="bg-[#f5f5f5] py-12 px-6">
+      <div className="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-start md:items-center gap-10">
+        <div className="flex flex-col gap-5">
+          <h3 className="text-xl font-semibold text-[#2563eb]">MyLocalService</h3>
+          <div className="flex items-center gap-2.5 text-gray-700">
+            <Phone sx={{ color: "#facc15", fontSize: 24 }} />
+            <span>80 546 456</span>
+          </div>
+          <div className="flex items-center gap-2.5 text-gray-700">
+            <Email sx={{ color: "#facc15", fontSize: 24 }} />
+            <span>myLocalservice@gmail.com</span>
+          </div>
+        </div>
+
+        <div className="flex flex-col gap-4">
+          <div className="flex items-center gap-2.5">
+            <Notifications sx={{ color: "#facc15", fontSize: 24 }} />
+            <span className="font-medium text-gray-700">Join our Newsletter</span>
+          </div>
+          <form onSubmit={handleSubmit} className="flex gap-2 flex-wrap">
+            <input
+              type="email"
+              placeholder="you@example.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="px-4 py-2.5 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 min-w-[220px]"
+            />
+            <button
+              type="submit"
+              className="px-6 py-2.5 bg-[#2563eb] text-white font-medium rounded-md hover:bg-[#1d4ed8] transition-colors"
+            >
+              Submit
+            </button>
+          </form>
+        </div>
+      </div>
     </footer>
   );
 }
