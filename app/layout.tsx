@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import Footer from '../components/Footer';
+import Navbar from "../components/Navbar";
+import Footer from "../components/Footer";
 
 export const metadata: Metadata = {
   title: "My Local Service",
@@ -17,6 +18,7 @@ export default function RootLayout({
       <body
         className={`antialiased sans-serif`}
       >
+        <Navbar />
         {children}
         <Footer />
       </body>

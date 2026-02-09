@@ -24,3 +24,9 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+.rounded-img {
+  border-radius: 20px;
+  overflow: hidden;
+  display: inline-block;
+}
