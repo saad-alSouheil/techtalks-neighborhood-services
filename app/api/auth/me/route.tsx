@@ -5,7 +5,7 @@ import User from "@/models/User";
 import connectDB from "@/lib/mongodb";
 interface JwtPayload {
   id: string;
-  role: string;
+  isProvider: boolean;
 }
 
 export async function GET() {
@@ -25,7 +25,7 @@ export async function GET() {
       process.env.JWT_SECRET as string
     ) as JwtPayload;
 
-    const user = await User.findById(decoded.id).select("-password_hash");
+    const user = await User.findById(decoded.id).select("-password");
     if (!user) {
       return NextResponse.json(
         { error: "User not found" },

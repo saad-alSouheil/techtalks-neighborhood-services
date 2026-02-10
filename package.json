@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "seed": "ts-node --esm scripts/seed.ts"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",
