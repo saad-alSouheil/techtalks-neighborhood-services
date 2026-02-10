@@ -1,1 +1,0 @@
-// Component to view the rating of a completed job
