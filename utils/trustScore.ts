@@ -35,12 +35,12 @@ export async function updateProviderTrustScore(
     );
 
     const count = ratings.length;
-    
+
     // Trust Score = Average of (reliability + punctuality + priceHonesty)
     const avgReliability = totals.reliability / count;
     const avgPunctuality = totals.punctuality / count;
     const avgPriceHonesty = totals.priceHonesty / count;
-    
+
     const trustScore = Number(
       ((avgReliability + avgPunctuality + avgPriceHonesty) / 3).toFixed(2)
     );
@@ -80,7 +80,7 @@ export async function getProviderStats(providerID: string | Types.ObjectId) {
       pendingJobs: totalJobs - completedJobs,
       trustScore: provider.trustScore,
       verification: provider.verification,
-      ratingRate: totalJobs > 0 ? ((totalRatings / completedJobs) * 100).toFixed(1) : '0',
+      ratingRate: completedJobs > 0 ? ((totalRatings / completedJobs) * 100).toFixed(1) : '0',
     };
   } catch (error) {
     console.error('Error getting provider stats:', error);
@@ -98,7 +98,7 @@ export async function getProviderStats(providerID: string | Types.ObjectId) {
 export async function canRateJob(jobID: string | Types.ObjectId): Promise<boolean> {
   try {
     const job = await Job.findById(jobID);
-    
+
     if (!job) {
       throw new Error('Job not found');
     }
@@ -109,10 +109,59 @@ export async function canRateJob(jobID: string | Types.ObjectId): Promise<boolea
 
     // Check if rating already exists
     const existingRating = await Rating.findOne({ jobID });
-    
+
     return !existingRating;
   } catch (error) {
     console.error('Error checking if job can be rated:', error);
+    throw error;
+  }
+}
+
+/**
+ * Comprehensive validation for rating creation
+ * Checks job eligibility AND user/provider authorization
+ * 
+ * @param jobID - The job's MongoDB ObjectId
+ * @param userID - The user attempting to create the rating
+ * @param providerID - The provider being rated
+ * @returns Object with isValid boolean and error message if invalid
+ */
+export async function validateRatingRequest(
+  jobID: string | Types.ObjectId,
+  userID: string | Types.ObjectId,
+  providerID: string | Types.ObjectId
+): Promise<{ isValid: boolean; error?: string; statusCode?: number }> {
+  try {
+    // Fetch the job once for all validations
+    const job = await Job.findById(jobID);
+    if (!job) {
+      return { isValid: false, error: "Job not found", statusCode: 404 };
+    }
+
+    // Check if job is completed
+    if (job.status !== "completed") {
+      return { isValid: false, error: "Cannot rate a job that is not completed", statusCode: 400 };
+    }
+
+    // Check if rating already exists
+    const existingRating = await Rating.findOne({ jobID });
+    if (existingRating) {
+      return { isValid: false, error: "A rating already exists for this job", statusCode: 400 };
+    }
+
+    // Verify the user is the customer for this job
+    if (job.userID.toString() !== userID.toString()) {
+      return { isValid: false, error: "Only the customer can rate this job", statusCode: 403 };
+    }
+
+    // Verify the provider matches the job
+    if (job.providerID.toString() !== providerID.toString()) {
+      return { isValid: false, error: "Provider ID does not match the job", statusCode: 400 };
+    }
+
+    return { isValid: true };
+  } catch (error) {
+    console.error('Error validating rating request:', error);
     throw error;
   }
 }
