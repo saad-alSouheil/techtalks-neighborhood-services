@@ -15,9 +15,8 @@ export default function LoginPage() {
     e.preventDefault();
     setError("");
     setLoading(true);
-    
 
-    try{
+    try {
       const res = await fetch("/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -27,7 +26,8 @@ export default function LoginPage() {
         const data = await res.json();
         throw new Error(data.message || "Login failed");
       }
-      router.push("/providers");
+      router.refresh();                  // ← refresh server components
+      router.push("/providers");         // then navigate
     } catch (err: Error | unknown) {
       setError(err instanceof Error ? err.message : "An error occurred");
     } finally {

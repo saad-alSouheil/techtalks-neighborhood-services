@@ -1,7 +1,6 @@
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import { cookies } from "next/headers";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import User from "@/models/User";
 import connectDB from "@/lib/mongodb";
 
@@ -10,7 +9,7 @@ interface LoginBody {
   password: string;
 }
 
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
   await connectDB();
 
   const body: LoginBody = await req.json();
@@ -38,15 +37,19 @@ export async function POST(req: Request) {
     { expiresIn: "7d" }
   );
 
-  (await cookies()).set("token", token, {
-    httpOnly: true,
-    sameSite: "strict",
-    maxAge: 60 * 60 * 24 * 7
-  });
-
-  return NextResponse.json({
+  const response = NextResponse.json({
     id: user._id,
     userName: user.userName,
     isProvider: user.isProvider
   });
+
+  response.cookies.set("token", token, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "strict",
+    path: "/",
+    maxAge: 60 * 60 * 24 * 7,
+  });
+
+  return response;
 }
