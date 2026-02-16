@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useAuthStore } from "@/store/useAuthStore"; 
 
 export default function LoginPage() {
   const router = useRouter();
@@ -10,6 +11,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const setUser = useAuthStore((state) => state.setUser);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -26,7 +28,8 @@ export default function LoginPage() {
         const data = await res.json();
         throw new Error(data.message || "Login failed");
       }
-      router.refresh();                  // ← refresh server components
+      const userData = await res.json();
+      setUser(userData.user);            // ← set user in Zustand store
       router.push("/providers");         // then navigate
     } catch (err: Error | unknown) {
       setError(err instanceof Error ? err.message : "An error occurred");

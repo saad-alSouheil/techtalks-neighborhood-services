@@ -1,25 +1,24 @@
 "use client";
 
-import React from "react";
+import { useAuthStore } from "@/store/useAuthStore";
 
-import { IUser } from "@/types";
+const Sidebar = () => {
+  const user = useAuthStore((state) => state.user);
 
-interface SidebarProps {
-    user: IUser;      
-}
-const Sidebar = ({ user }: SidebarProps) => {
-    return (
-    <aside className="w-64 bg-gray-100 p-4">
-        <ul className="space-y-2">
-            <li>Browse</li>
-            <li>Profile</li>
+  if (!user) return null;
 
-            {user.isProvider && (
-            <li>Manage Services</li>
-            )}
-        </ul>
+  return (
+    <aside className="w-64 bg-white p-4">
+      <ul className="space-y-2">
+        <li>Browse</li>
+        <li>Profile</li>
+
+        {user.isProvider && (
+          <li>Manage Services</li>
+        )}
+      </ul>
     </aside>
-    );
-}
+  );
+};
 
-export default Sidebar
+export default Sidebar;
