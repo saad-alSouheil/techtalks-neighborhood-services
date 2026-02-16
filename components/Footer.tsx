@@ -12,7 +12,7 @@ export default function Footer() {
   };
 
   return (
-    <footer className="bg-[#f5f5f5] py-12 px-6">
+    <footer className="bg-[#E3E3E3] py-12 px-6">
       <div className="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-start md:items-center gap-10">
         <div className="flex flex-col gap-5">
           <h3 className="text-xl font-semibold text-[#0065FF]">MyLocalService</h3>

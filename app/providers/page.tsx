@@ -1,13 +1,3 @@
-/* // i updated this one too (Celine mortada)
-const ProvidersList = () => {
-  return (
-    <div>List of providers page</div>
-    
-  )
-}
-
-export default ProvidersList
-*/
 "use client";
 
 import { useState } from "react";
@@ -28,12 +18,7 @@ export default function ProvidersList() {
     <div className="p-6">
       <div>List of providers page</div>
 
-      <button
-        className="mt-4 rounded-lg bg-blue-600 px-4 py-2 text-white"
-        onClick={() => setOpen(true)}
-      >
-        View Rating
-      </button>
+    
 
       <ViewRating open={open} onClose={() => setOpen(false)} rating={rating} />
     </div>
