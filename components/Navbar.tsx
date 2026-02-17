@@ -20,7 +20,7 @@ export default function Navbar() {
 
   return (
     <header className="bg-white">
-      <nav className="mx-auto px-6 py-5 flex items-center pr-10 pl-10 pt-5">
+      <nav className="mx-auto px-6 py-5 flex items-center pr-10 pl-10 pt-5 shadow-lg">
         <p className="text-2xl font-semibold text-[#0065FF] flex-1">
           MyLocalService
         </p>
