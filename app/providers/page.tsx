@@ -1,95 +1,162 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import ProviderCard, { ServiceProvider } from "@/components/ProviderCard";
-import ViewRating from "@/components/ViewRating";
+import SearchIcon from '@mui/icons-material/Search';
 
-const providers: ServiceProvider[] = [
-  {
-    id: 1,
-    name: "Johnny Smith",
-    profession: "Electrician",
-    trustScore: 95,
-    location: "Beirut, Ras Beirut",
-    avatarColor: "bg-yellow-400",
-  },
-  {
-    id: 2,
-    name: "Sara Hanson",
-    profession: "Physical Therapist",
-    trustScore: 90,
-    location: "Beirut, Hamra",
-    avatarColor: "bg-teal-400",
-  },
-  {
-    id: 3,
-    name: "Michael Hanna",
-    profession: "Plumber",
-    trustScore: 89,
-    location: "Beirut, Achrafieh",
-    avatarColor: "bg-red-400",
-  },
-  {
-    id: 4,
-    name: "Sami Akhdar",
-    profession: "Gardner",
-    trustScore: 86,
-    location: "Beirut, Raoucheh",
-    avatarColor: "bg-green-400",
-  },
-  {
-    id: 5,
-    name: "Lara Hasan",
-    profession: "Babysitter",
-    trustScore: 96,
-    location: "Beirut, Basta",
-    avatarColor: "bg-purple-400",
-  },
-  {
-    id: 6,
-    name: "Sina Manson",
-    profession: "Cleaning Lady",
-    trustScore: 86,
-    location: "Beirut, Hamra",
-    avatarColor: "bg-gray-400",
-  },
-];
+interface ApiProvider {
+  _id: string;
+  serviceType: string;
+  trustScore: number;
+  userID: {
+    userName: string;
+  };
+  neighborhoodID: {
+    name: string;
+    city: string;
+  };
+}
 
-const sampleRating = {
-  reliability: 4,
-  punctuality: 5,
-  priceHonesty: 4,
-  total: 4.3,
-  comment:
-    "The job was done perfectly within a suitable period of time.",
-};
+interface Neighborhood {
+  id: string;
+  name: string;
+  city: string;
+}
 
 export default function ServicesPage() {
-  const [ratingOpen, setRatingOpen] = useState(false);
+  const [providers, setProviders] = useState<ServiceProvider[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [search, setSearch] = useState("");
+  const [selectedNeighborhood, setSelectedNeighborhood] = useState("");
+  const [neighborhoods, setNeighborhoods] = useState<Neighborhood[]>([]);
+
+  const colors = [
+    "bg-[#00FFE1]",
+    "bg-[#FFD279]",
+    "bg-[#ff5e5e]",
+    "bg-[#02FF80]",
+    "bg-[#efbbfa]",
+    "bg-[#fcea42]",
+  ];
+
+  function getRandomColor() {
+    return colors[Math.floor(Math.random() * colors.length)];
+  }
+
+  const fetchProviders = async () => {
+    try {
+      setLoading(true);
+
+      const query = [];
+
+      if (search) query.push(`service=${encodeURIComponent(search.toLowerCase())}`);
+      if (selectedNeighborhood)
+        query.push(`neighborhood=${encodeURIComponent(selectedNeighborhood)}`);
+
+      const queryString = query.length ? `?${query.join("&")}` : "";
+
+      const res = await fetch(`/api/providers${queryString}`);
+      const data = await res.json();
+
+      const formatted: ServiceProvider[] = data.providers.map(
+        (provider: ApiProvider) => ({
+          id: provider._id,
+          name: provider.userID.userName,
+          profession: provider.serviceType,
+          trustScore: provider.trustScore,
+          location: `${provider.neighborhoodID.city}, ${provider.neighborhoodID.name}`,
+          avatarColor: getRandomColor(),
+        })
+      );
+
+      setProviders(formatted);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Fetch Neighborhoods
+  const fetchNeighborhoods = async () => {
+    try {
+      const res = await fetch("/api/neighborhood");
+      const data = await res.json();
+      setNeighborhoods(data);
+    } catch (error) {
+      console.error("Error fetching neighborhoods:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchProviders();
+    fetchNeighborhoods();
+  }, []);
+
+  const handleSearch = () => {
+    fetchProviders();
+  };
 
   return (
-    <div className="flex justify-center min-h-screen p-8">
-      <div className="bg-white rounded-3xl shadow-lg p-10 w-full max-w-6xl">
-        <h2 className="text-2xl font-semibold mb-8">
-          Service Providers’ List
-        </h2>
+    <div className="flex justify-center min-h-screen bg-[#F7F7F7]">
+      <div className="bg-white rounded-3xl shadow-lg p-10 w-full max-w-7xl">
+        
+        {/* Top Action Row */}
+        <div className="flex flex-col lg:flex-row items-center justify-between gap-4 mb-8 bg-[#F7F7F7] rounded-lg p-4 pl-4 pr-4 shadow-sm">
+          
+          {/* Become Provider Button */}
+          <button className="bg-[#0065FF] text-white px-6 py-2 rounded-full min-w-[300px] font-medium hover:bg-blue-800 transition">
+            Become a provider
+          </button>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-          {providers.map((provider) => (
-            <ProviderCard
-              key={provider.id}
-              provider={provider}
-              onViewRating={() => setRatingOpen(true)}
+          {/* Search Bar */}
+          <div className="relative w-full max-w-md bg-white rounded-full">
+            <input
+              type="text"
+              placeholder="Search Service Type"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+              className="w-full border border-gray-300 rounded-full pl-5 pr-12 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
             />
-          ))}
-        </div>
-      </div>
+            <button
+              onClick={handleSearch}
+              className="absolute right-4 top-2.5 w-5 h-5 text-gray-500 cursor-pointer"
+            >
+            <SearchIcon className="w-5 h-5 text-gray-500" />
+            </button>
+          </div>
 
-      <ViewRating
-        open={ratingOpen}
-        onClose={() => setRatingOpen(false)}
-        rating={sampleRating}
-      />
+          {/* Neighborhood Dropdown */}
+          <select
+            value={selectedNeighborhood}
+            onChange={(e) => {
+              setSelectedNeighborhood(e.target.value);
+            }}
+            className="font-bold border border-gray-300 rounded-sm px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#0065FF] min-w-[300px] bg-white"
+          >
+            <option value="">Neighbourhood</option>
+            {neighborhoods.map((neighborhood) => (
+              <option key={neighborhood.id} value={neighborhood.name}>
+                {neighborhood.city}, {neighborhood.name}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {/* Providers Grid */}
+        {loading ? (
+          <p>Loading...</p>
+        ) : providers.length === 0 ? (
+          <p className="text-gray-500">No providers found.</p>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+            {providers.map((provider) => (
+              <ProviderCard key={provider.id} provider={provider} />
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
