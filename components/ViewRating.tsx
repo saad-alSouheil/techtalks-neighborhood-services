@@ -1,11 +1,11 @@
 "use client";
 
 type JobRating = {
-  jobTitle: string;
-  customerName?: string;
-  rating: number;
-  review?: string;
-  date?: string;
+  reliability: number;
+  punctuality: number;
+  priceHonesty: number;
+  total: number;
+  comment?: string;
 };
 
 type ViewRatingProps = {
@@ -17,17 +17,20 @@ type ViewRatingProps = {
 export default function ViewRating({ open, onClose, rating }: ViewRatingProps) {
   if (!open || !rating) return null;
 
-  const filledStars = Math.max(0, Math.min(5, Math.round(rating.rating)));
-
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="rating-title"
+    >
       <div className="relative w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
         <button
           type="button"
           onClick={onClose}
           className="absolute right-4 top-4 rounded-full p-1 text-gray-500 hover:bg-gray-100 hover:text-gray-700"
+          aria-label="Close"
         >
-          <span className="sr-only">Close</span>
           <svg
             xmlns="http://www.w3.org/2000/svg"
             viewBox="0 0 24 24"
@@ -40,50 +43,36 @@ export default function ViewRating({ open, onClose, rating }: ViewRatingProps) {
           </svg>
         </button>
 
-        <div className="mb-4">
-          <p className="text-sm font-medium text-gray-500">Job rating</p>
-          <h2 className="mt-1 text-xl font-semibold text-gray-900">{rating.jobTitle}</h2>
-          {rating.date && (
-            <p className="mt-1 text-xs text-gray-400">{rating.date}</p>
-          )}
-        </div>
+        <h2 id="rating-title" className="mb-6 text-center text-xl font-bold text-orange-500">
+          Rating
+        </h2>
 
-        <div className="mb-4 flex items-center gap-2">
-          <div className="flex items-center gap-1">
-            {Array.from({ length: 5 }).map((_, index) => (
-              <span
-                key={index}
-                className={
-                  index < filledStars
-                    ? "text-yellow-400"
-                    : "text-gray-300"
-                }
-              >
-                ★
-              </span>
-            ))}
+        <div className="space-y-3 text-gray-800">
+          <div className="flex justify-between">
+            <span>Reliability:</span>
+            <span>{rating.reliability}</span>
           </div>
-          <p className="text-sm font-semibold text-gray-800">
-            {rating.rating.toFixed(1)}
-          </p>
+          <div className="flex justify-between">
+            <span>Punctuality:</span>
+            <span>{rating.punctuality}</span>
+          </div>
+          <div className="flex justify-between">
+            <span>Price Honesty:</span>
+            <span>{rating.priceHonesty}</span>
+          </div>
+          <div className="flex justify-between font-semibold">
+            <span>Total:</span>
+            <span>{typeof rating.total === "number" ? rating.total.toFixed(1) : rating.total}</span>
+          </div>
         </div>
 
-        {rating.customerName && (
-          <p className="mb-2 text-sm text-gray-600">
-            From {rating.customerName}
-          </p>
-        )}
-
-        {rating.review && (
-          <p className="mt-2 rounded-xl bg-gray-50 p-4 text-sm leading-relaxed text-gray-700">
-            {rating.review}
-          </p>
-        )}
-
-        {!rating.review && (
-          <p className="mt-2 text-sm text-gray-400">
-            No written review provided for this job.
-          </p>
+        {rating.comment && (
+          <div className="mt-4">
+            <p className="mb-1 text-sm font-medium text-gray-700">Comment:</p>
+            <p className="text-sm leading-relaxed text-gray-600">
+              {rating.comment}
+            </p>
+          </div>
         )}
       </div>
     </div>
