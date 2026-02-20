@@ -1,4 +1,8 @@
+"use client";
+
+import { useState } from "react";
 import ProviderCard, { ServiceProvider } from "@/components/ProviderCard";
+import ViewRating from "@/components/ViewRating";
 
 const providers: ServiceProvider[] = [
   {
@@ -51,7 +55,18 @@ const providers: ServiceProvider[] = [
   },
 ];
 
+const sampleRating = {
+  reliability: 4,
+  punctuality: 5,
+  priceHonesty: 4,
+  total: 4.3,
+  comment:
+    "The job was done perfectly within a suitable period of time.",
+};
+
 export default function ServicesPage() {
+  const [ratingOpen, setRatingOpen] = useState(false);
+
   return (
     <div className="flex justify-center min-h-screen p-8">
       <div className="bg-white rounded-3xl shadow-lg p-10 w-full max-w-6xl">
@@ -61,10 +76,20 @@ export default function ServicesPage() {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
           {providers.map((provider) => (
-            <ProviderCard key={provider.id} provider={provider} />
+            <ProviderCard
+              key={provider.id}
+              provider={provider}
+              onViewRating={() => setRatingOpen(true)}
+            />
           ))}
         </div>
       </div>
+
+      <ViewRating
+        open={ratingOpen}
+        onClose={() => setRatingOpen(false)}
+        rating={sampleRating}
+      />
     </div>
   );
 }

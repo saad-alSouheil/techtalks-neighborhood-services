@@ -11,9 +11,10 @@ export interface ServiceProvider {
 
 interface Props {
   provider: ServiceProvider;
+  onViewRating?: () => void;
 }
 
-export default function ProviderCard({ provider }: Props) {
+export default function ProviderCard({ provider, onViewRating }: Props) {
   return (
     <div className=" bg-white rounded-2xl border border-gray-300 max-w-80 shadow-md p-6 w-full  hover:shadow-lg transition duration-300">
       {/* Avatar + Name */}
@@ -37,6 +38,15 @@ export default function ProviderCard({ provider }: Props) {
           <span className="font-medium">Trust Score :</span>{" "}
           {provider.trustScore}%
         </span>
+        {onViewRating && (
+          <button
+            type="button"
+            onClick={onViewRating}
+            className="ml-2 text-sm text-orange-500 hover:text-orange-600 underline"
+          >
+            View rating
+          </button>
+        )}
       </div>
 
       {/* Location */}
