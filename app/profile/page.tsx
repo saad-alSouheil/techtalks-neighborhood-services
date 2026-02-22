@@ -7,6 +7,7 @@ import VerifiedIcon from "@mui/icons-material/Verified";
 import PhoneIcon from "@mui/icons-material/Phone";
 import LocationOnIcon from "@mui/icons-material/LocationOn";
 import WorkIcon from "@mui/icons-material/Work";
+import RequestedServices from "../../components/RequestedServices"; // Adjust the import path as needed
 
 type JobStatus = "pending" | "confirmed" | "completed" | "cancelled";
 
@@ -118,8 +119,11 @@ const Profile = () => {
         </div>
       </div>
 
+      {/* Requested Services Component */}
+      <RequestedServices userId={user?._id} />
+
       {/* Jobs Section */}
-      <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-md">
+   {/*    <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-md">
         <div className="mb-4 flex items-center gap-2">
           <WorkIcon className="h-5 w-5 text-purple-500" />
           <h2 className="text-xl font-bold text-gray-900">My Jobs</h2>
@@ -177,8 +181,8 @@ const Profile = () => {
                       </p>
                     )}
                   </div>
-
-                  {/* Status Badge */}
+*/}
+                  {/* Status Badge 
                   <span
                     className={`self-start rounded-full px-3 py-1 text-xs font-semibold capitalize sm:self-center ${statusColors[job.status]}`}
                   >
@@ -189,7 +193,7 @@ const Profile = () => {
             ))}
           </div>
         )}
-      </div>
+      </div>*/}
     </div>
   );
 };
