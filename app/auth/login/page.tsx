@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { useAuthStore } from "@/store/useAuthStore"; 
+import { useAuthStore } from "@/store/useAuthStore";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -29,8 +29,8 @@ export default function LoginPage() {
         throw new Error(data.message || "Login failed");
       }
       const userData = await res.json();
-      setUser(userData.user);            // ← set user in Zustand store
-      router.push("/providers");         // then navigate
+      setUser({ _id: userData.id, userName: userData.userName, isProvider: userData.isProvider });
+      router.push("/providers");
     } catch (err: Error | unknown) {
       setError(err instanceof Error ? err.message : "An error occurred");
     } finally {
@@ -74,7 +74,7 @@ export default function LoginPage() {
           {error && <p className="text-red-500 text-sm">{error}</p>}
 
           <button disabled={loading}
-                  className="bg-orange-600 text-white p-3 rounded-full font-semibold hover:bg-orange-700 transition"
+            className="bg-orange-600 text-white p-3 rounded-full font-semibold hover:bg-orange-700 transition"
           >
             {loading ? (
               <span className="ml-2">Loading...</span>
