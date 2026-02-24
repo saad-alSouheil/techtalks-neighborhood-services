@@ -4,12 +4,14 @@ import User from "@/models/User";
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     await connectDB();
 
-    const user = await User.findById(params.id).select(
+    const { id } = await params;
+
+    const user = await User.findById(id).select(
       "userName phone neighborhoodID isProvider email"
     );
 

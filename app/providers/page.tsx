@@ -49,7 +49,11 @@ export default function ServicesPage() {
 
       const query = [];
 
-      if (search) query.push(`service=${encodeURIComponent(search.toLowerCase())}`);
+      if (search) {
+        const value = search.toLowerCase();
+        query.push(`service=${encodeURIComponent(value)}`);
+        query.push(`query=${encodeURIComponent(value)}`);
+      }
       if (selectedNeighborhood)
         query.push(`neighborhood=${encodeURIComponent(selectedNeighborhood)}`);
 

@@ -1,5 +1,6 @@
 import StarsIcon from '@mui/icons-material/Stars';
 import PlaceOutlinedIcon from '@mui/icons-material/PlaceOutlined';
+import { useRouter } from "next/navigation";
 export interface ServiceProvider {
   id: number;
   name: string;
@@ -14,8 +15,17 @@ interface Props {
 }
 
 export default function ProviderCard({ provider }: Props) {
+  const router = useRouter();
+
+  const goToProfile = () => {
+    router.push(`/providers/${provider.id}`);
+  };
+
   return (
-    <div className=" bg-white rounded-2xl border border-gray-300 max-w-80 shadow-md p-6 w-full  hover:shadow-lg transition duration-300">
+    <div
+      className="bg-white rounded-2xl border border-gray-300 max-w-80 shadow-md p-6 w-full hover:shadow-lg transition duration-300 cursor-pointer"
+      onClick={goToProfile}
+    >
       {/* Avatar + Name */}
       <div className="flex items-center gap-4 mb-4">
         <div
@@ -46,7 +56,14 @@ export default function ProviderCard({ provider }: Props) {
       </div>
 
       {/* Button */}
-      <button className="ml-12 bg-yellow-400 hover:bg-[#FFA902] text-white px-6 py-2 rounded-full text-sm font-medium transition">
+      <button
+        type="button"
+        onClick={(e) => {
+          e.stopPropagation();
+          goToProfile();
+        }}
+        className="ml-12 bg-yellow-400 hover:bg-[#FFA902] text-white px-6 py-2 rounded-full text-sm font-medium transition"
+      >
         Check out
       </button>
     </div>
