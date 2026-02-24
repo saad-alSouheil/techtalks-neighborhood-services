@@ -1,0 +1,144 @@
+.rate-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 16px;
+}
+
+.rate-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.25);
+}
+
+.rate-modal {
+  position: relative;
+  width: 100%;
+  max-width: 650px;
+  background: white;
+  border-radius: 18px;
+  padding: 32px 28px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+  z-index: 1;
+}
+
+.rate-close {
+  position: absolute;
+  right: 14px;
+  top: 14px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-size: 18px;
+  color: #777;
+}
+
+.rate-title {
+  font-size: 56px;
+  font-weight: 800;
+  color: #2563eb; 
+  margin: 0;
+}
+
+.rate-divider {
+  margin-top: 14px;
+  height: 1px;
+  background: #e6e6e6;
+  width: 100%;
+}
+
+.rate-form {
+  margin-top: 28px;
+}
+
+.rate-row {
+  display: grid;
+  grid-template-columns: 1fr 220px;
+  gap: 20px;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.rate-label {
+  font-size: 28px;
+  font-weight: 700;
+  color: #111;
+}
+
+.rate-input {
+  height: 46px;
+  border: 1px solid #d0d0d0;
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 14px;
+  outline: none;
+}
+
+.rate-input:focus {
+  border-color: #2563eb;
+}
+
+.rate-comment {
+  margin-top: 10px;
+}
+
+.rate-label-small {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  color: #444;
+  margin-bottom: 8px;
+}
+
+.rate-textarea {
+  width: 100%;
+  border: 1px solid #d0d0d0;
+  border-radius: 10px;
+  padding: 14px;
+  font-size: 14px;
+  outline: none;
+  min-height: 110px;
+  resize: none;
+}
+
+.rate-textarea:focus {
+  border-color: #2563eb;
+}
+
+.rate-actions {
+  display: flex;
+  justify-content: center;
+  margin-top: 22px;
+}
+
+.rate-submit {
+  border: none;
+  cursor: pointer;
+  background: #f59e0b; 
+  color: white;
+  font-weight: 700;
+  padding: 12px 40px;
+  border-radius: 999px;
+  font-size: 16px;
+}
+
+.rate-submit:hover {
+  background: #e48c05;
+}
+
+@media (max-width: 600px) {
+  .rate-title {
+    font-size: 38px;
+  }
+
+  .rate-row {
+    grid-template-columns: 1fr;
+  }
+
+  .rate-label {
+    font-size: 22px;
+  }
+}
