@@ -49,3 +49,50 @@ export async function GET(req: Request) {
         );
     }
 }
+
+// PATCH: Update job status
+export async function PATCH(req: Request) {
+    try {
+        await connectDB();
+        const body = await req.json();
+        const { jobID, status } = body;
+
+        if (!jobID || !status) {
+            return NextResponse.json(
+                { error: 'Missing required fields: jobID, status' },
+                { status: 400 }
+            );
+        }
+
+        const updateData: { status: string; completedDate?: Date } = { status };
+
+        if (status === 'completed') {
+            updateData.completedDate = new Date();
+        }
+
+        const updatedJob = await Job.findByIdAndUpdate(
+            jobID,
+            updateData,
+            { new: true }
+        );
+
+        if (!updatedJob) {
+            return NextResponse.json(
+                { error: 'Job not found' },
+                { status: 404 }
+            );
+        }
+
+        return NextResponse.json(
+            { message: 'Job updated successfully', job: updatedJob },
+            { status: 200 }
+        );
+
+    } catch (error: unknown) {
+        console.error('Error updating job:', error);
+        return NextResponse.json(
+            { error: 'Internal server error' },
+            { status: 500 }
+        );
+    }
+}
