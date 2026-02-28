@@ -5,6 +5,7 @@ import { useParams } from "next/navigation";
 import ProviderInfoCard, {
   type ProviderInfoCardData,
 } from "@/components/ProviderInfoCard";
+import ReviewCard from "@/components/ReviewCard";
 
 type ApiProvider = {
   _id: string;
@@ -20,6 +21,15 @@ type ApiProvider = {
     name?: string;
     city?: string;
   };
+};
+
+type Review = {
+  _id: string;
+  userID?: {
+    userName?: string;
+  };
+  createdAt?: string;
+  comment?: string;
 };
 
 function serviceTypeToLabel(serviceType?: string) {
@@ -68,6 +78,7 @@ export default function ProviderProfilePage() {
   const [servicesPerformed, setServicesPerformed] = useState<number | undefined>(
     undefined
   );
+  const [reviews, setReviews] = useState<Review[]>([]);
 
   useEffect(() => {
     let cancelled = false;
@@ -78,13 +89,14 @@ export default function ProviderProfilePage() {
       setError(null);
 
       try {
-        const [providerRes, jobsRes] = await Promise.all([
+        const [providerRes, jobsRes, ratingsRes] = await Promise.all([
           fetch(`/api/providers/${encodeURIComponent(providerId)}`),
           fetch(
             `/api/jobs?providerID=${encodeURIComponent(
               providerId
             )}&status=completed`
           ),
+          fetch(`/api/rating?providerID=${encodeURIComponent(providerId)}`),
         ]);
 
         if (!providerRes.ok) {
@@ -95,12 +107,14 @@ export default function ProviderProfilePage() {
 
         const providerJson = (await providerRes.json()) as ApiProvider;
         const jobsJson = (await jobsRes.json()) as { jobs?: unknown[] };
+        const ratingsJson = (await ratingsRes.json()) as { ratings?: Review[] };
 
         if (cancelled) return;
         setProvider(providerJson);
         setServicesPerformed(
           Array.isArray(jobsJson?.jobs) ? jobsJson.jobs.length : undefined
         );
+        setReviews(Array.isArray(ratingsJson?.ratings) ? ratingsJson.ratings : []);
       } catch (e) {
         if (cancelled) return;
         setError(e instanceof Error ? e.message : "Something went wrong.");
@@ -140,7 +154,7 @@ export default function ProviderProfilePage() {
 
   return (
     <div className="min-h-[60vh] flex justify-center">
-      <div className="w-full max-w-5xl">
+      <div className="w-full max-w-10xl">
         {loading ? (
           <div className="text-gray-600">Loading...</div>
         ) : error ? (
@@ -156,6 +170,42 @@ export default function ProviderProfilePage() {
         ) : (
           <div className="text-gray-600">No provider data.</div>
         )}
+        {/* Reviews Row */}
+        <div className="flex bg-white rounded-2xl shadow-md p-6 mt-10">
+          <h2 className="text-2xl font-bold text-gray-900 mb-6">Reviews</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
+            {reviews && reviews.length > 0 ? (
+              reviews.slice(0, 3).map((r: Review, idx: number) => {
+                const name = r.userID?.userName || "Anonymous";
+                const created = r.createdAt ? new Date(r.createdAt) : new Date();
+                const date = `${String(created.getDate()).padStart(2, "0")} / ${String(
+                  created.getMonth() + 1
+                ).padStart(2, "0")} / ${created.getFullYear()}`;
+                const text = r.comment || "";
+                const colors: Array<"yellow" | "teal" | "red" | "purple" | "gray"> = [
+                  "teal",
+                  "purple",
+                  "yellow",
+                  "red",
+                  "gray",
+                ];
+                const avatarColor = colors[idx % colors.length];
+
+                return (
+                  <ReviewCard
+                    key={r._id || idx}
+                    name={name}
+                    date={date}
+                    text={text}
+                    avatarColor={avatarColor}
+                  />
+                );
+              })
+            ) : (
+              <div className="text-gray-500">No reviews yet.</div>
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );

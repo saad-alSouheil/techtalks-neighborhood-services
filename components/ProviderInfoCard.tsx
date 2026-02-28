@@ -24,7 +24,7 @@ export default function ProviderInfoCard({
   onHire?: () => void;
 }) {
   return (
-    <div className="w-full max-w-3xl bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+    <div className="w-full  bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
       <div className="p-5 flex gap-4">
         <div className="h-16 w-16 rounded-full bg-gradient-to-br from-purple-400 to-purple-600 flex items-center justify-center shrink-0">
           <PersonOutlineIcon className="text-white" />
