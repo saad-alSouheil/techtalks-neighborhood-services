@@ -3,12 +3,22 @@
 import { useEffect, useState } from "react";
 import "./Rate.css";
 
-export default function RatePopup({ isOpen, onClose, onSubmit }: { isOpen: boolean; onClose: () => void; onSubmit: (data: { reliability: string | number; punctuality: string | number; priceHonesty: string | number; comment: string }) => void }) {
+interface RatePopupProps {
+  isOpen: boolean;
+  onClose: () => void;
+  jobID: string;
+  userID: string;
+  providerID: string;
+  onSuccess: () => void;
+}
+
+export default function RatePopup({ isOpen, onClose, jobID, userID, providerID, onSuccess }: RatePopupProps) {
   const [reliability, setReliability] = useState("");
   const [punctuality, setPunctuality] = useState("");
   const [priceHonesty, setPriceHonesty] = useState("");
   const [comment, setComment] = useState("");
-
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -21,34 +31,83 @@ export default function RatePopup({ isOpen, onClose, onSubmit }: { isOpen: boole
     return () => window.removeEventListener("keydown", handleEsc);
   }, [isOpen, onClose]);
 
+  // Reset form when popup closes
+  useEffect(() => {
+    if (!isOpen) {
+      setReliability("");
+      setPunctuality("");
+      setPriceHonesty("");
+      setComment("");
+      setError(null);
+    }
+  }, [isOpen]);
+
   if (!isOpen) return null;
 
-  const clamp0to5 = (value: string | number) => {
+  const clamp1to5 = (value: string) => {
     if (value === "") return "";
     let n = Number(value);
     if (Number.isNaN(n)) return "";
-    if (n < 0) n = 0;
+    if (n < 1) n = 1;
     if (n > 5) n = 5;
     return String(n);
   };
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setError(null);
 
     if (reliability === "" || punctuality === "" || priceHonesty === "") {
-      alert("Please fill all ratings (0-5).");
+      setError("Please fill all ratings (1–5).");
       return;
     }
 
-    const data = {
-      reliability,
-      punctuality,
-      priceHonesty,
-      comment,
-    };
+    setIsSubmitting(true);
+    try {
+      // 1. Mark job as completed
+      const jobRes = await fetch("/api/jobs", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          jobID,
+          status: "completed",
+        }),
+      });
 
-    if (onSubmit) onSubmit(data);
-    onClose();
+      if (!jobRes.ok) {
+        const jobData = await jobRes.json();
+        setError(jobData.error ?? "Failed to mark job as completed.");
+        return;
+      }
+
+      // 2. Submit rating
+      const ratingRes = await fetch("/api/rating", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          jobID,
+          userID,
+          providerID,
+          reliability: Number(reliability),
+          punctuality: Number(punctuality),
+          priceHonesty: Number(priceHonesty),
+          comment,
+        }),
+      });
+
+      if (!ratingRes.ok) {
+        const ratingData = await ratingRes.json();
+        setError(ratingData.error ?? "Failed to submit rating. Please try again.");
+        return;
+      }
+
+      onSuccess();
+      onClose();
+    } catch {
+      setError("Network error. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -70,11 +129,11 @@ export default function RatePopup({ isOpen, onClose, onSubmit }: { isOpen: boole
             <input
               className="rate-input"
               type="number"
-              min="0"
+              min="1"
               max="5"
-              placeholder="0 - 5"
+              placeholder="1 - 5"
               value={reliability}
-              onChange={(e) => setReliability(clamp0to5(e.target.value))}
+              onChange={(e) => setReliability(clamp1to5(e.target.value))}
             />
           </div>
 
@@ -83,11 +142,11 @@ export default function RatePopup({ isOpen, onClose, onSubmit }: { isOpen: boole
             <input
               className="rate-input"
               type="number"
-              min="0"
+              min="1"
               max="5"
-              placeholder="0 - 5"
+              placeholder="1 - 5"
               value={punctuality}
-              onChange={(e) => setPunctuality(clamp0to5(e.target.value))}
+              onChange={(e) => setPunctuality(clamp1to5(e.target.value))}
             />
           </div>
 
@@ -96,11 +155,11 @@ export default function RatePopup({ isOpen, onClose, onSubmit }: { isOpen: boole
             <input
               className="rate-input"
               type="number"
-              min="0"
+              min="1"
               max="5"
-              placeholder="0 - 5"
+              placeholder="1 - 5"
               value={priceHonesty}
-              onChange={(e) => setPriceHonesty(clamp0to5(e.target.value))}
+              onChange={(e) => setPriceHonesty(clamp1to5(e.target.value))}
             />
           </div>
 
@@ -114,9 +173,13 @@ export default function RatePopup({ isOpen, onClose, onSubmit }: { isOpen: boole
             ></textarea>
           </div>
 
+          {error && (
+            <p className="text-red-500 text-sm mt-1">{error}</p>
+          )}
+
           <div className="rate-actions">
-            <button className="rate-submit" type="submit">
-              Submit
+            <button className="rate-submit" type="submit" disabled={isSubmitting}>
+              {isSubmitting ? "Submitting…" : "Submit"}
             </button>
           </div>
         </form>
