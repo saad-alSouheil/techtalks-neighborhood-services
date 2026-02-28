@@ -55,7 +55,7 @@ export async function PATCH(req: Request) {
     try {
         await connectDB();
         const body = await req.json();
-        const { jobID, status } = body;
+        const { jobID, status, price } = body;
 
         if (!jobID || !status) {
             return NextResponse.json(
@@ -64,7 +64,12 @@ export async function PATCH(req: Request) {
             );
         }
 
-        const updateData: { status: string; completedDate?: Date } = { status };
+        const updateData: { status: string; completedDate?: Date; price?: number } = { status };
+
+        // allow price to be set when accepting job
+        if (price !== undefined) {
+            updateData.price = price;
+        }
 
         if (status === 'completed') {
             updateData.completedDate = new Date();

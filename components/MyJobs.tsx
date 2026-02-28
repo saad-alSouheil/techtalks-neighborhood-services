@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import WorkOutlineIcon from "@mui/icons-material/WorkOutline";
 import { useAuthStore } from "@/store/useAuthStore";
+import ViewRating from "./ViewRating";
 
 type JobStatus = "pending" | "confirmed" | "completed" | "cancelled";
 
@@ -32,6 +33,17 @@ export default function MyJobs() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [providerID, setProviderID] = useState<string | null>(null);
+    const [pendingPrices, setPendingPrices] = useState<Record<string, string>>({});
+
+    // view rating state
+    const [ratingOpen, setRatingOpen] = useState(false);
+    const [currentRating, setCurrentRating] = useState<{
+        reliability: number;
+        punctuality: number;
+        priceHonesty: number;
+        total: number;
+        comment?: string;
+    } | null>(null);
 
     // Fetch provider ID for the current user
     const fetchProviderID = useCallback(async (userId: string) => {
@@ -66,23 +78,71 @@ export default function MyJobs() {
         }
     }, []);
 
-    // Handle marking job as completed
-    const handleMarkDone = async (jobID: string) => {
+    // Handle accepting a pending job with a price
+    const handleAccept = async (jobID: string) => {
+        const priceStr = pendingPrices[jobID];
+        const price = parseFloat(priceStr);
+        if (isNaN(price) || price < 0) {
+            setError("Please enter a valid price");
+            return;
+        }
+
         try {
             const res = await fetch("/api/jobs", {
                 method: "PATCH",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                    jobID,
-                    status: "completed",
-                }),
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ jobID, status: "confirmed", price }),
             });
-            if (!res.ok) throw new Error("Failed to update job");
+            if (!res.ok) throw new Error("Failed to accept job");
+            setPendingPrices((prev) => ({ ...prev, [jobID]: "" }));
             fetchJobs(providerID!);
         } catch (err: unknown) {
-            console.error("Error updating job:", err);
+            console.error("Error accepting job:", err);
+            setError(err instanceof Error ? err.message : "Unknown error");
+        }
+    };
+
+    // Handle cancelling a pending job (no price set)
+    const handleCancel = async (jobID: string) => {
+        try {
+            const res = await fetch("/api/jobs", {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ jobID, status: "cancelled" }),
+            });
+            if (!res.ok) throw new Error("Failed to cancel job");
+            // clear any entered price
+            setPendingPrices((prev) => ({ ...prev, [jobID]: "" }));
+            fetchJobs(providerID!);
+        } catch (err: unknown) {
+            console.error("Error cancelling job:", err);
+            setError(err instanceof Error ? err.message : "Unknown error");
+        }
+    };
+
+    // Fetch and view rating for a completed job
+    const openRating = async (jobID: string) => {
+        try {
+            const res = await fetch(`/api/rating?jobID=${jobID}`);
+            if (!res.ok) throw new Error("Failed to fetch rating");
+            const data = await res.json();
+            const rating = data.ratings && data.ratings[0];
+            if (rating) {
+                const total =
+                    (rating.reliability + rating.punctuality + rating.priceHonesty) / 3;
+                setCurrentRating({
+                    reliability: rating.reliability,
+                    punctuality: rating.punctuality,
+                    priceHonesty: rating.priceHonesty,
+                    total,
+                    comment: rating.comment,
+                });
+                setRatingOpen(true);
+            } else {
+                setError("No rating available for this job");
+            }
+        } catch (err: unknown) {
+            console.error("Error fetching rating:", err);
             setError(err instanceof Error ? err.message : "Unknown error");
         }
     };
@@ -103,6 +163,8 @@ export default function MyJobs() {
 
     return (
         <>
+            {/* rating popup */}
+            <ViewRating open={ratingOpen} onClose={() => setRatingOpen(false)} rating={currentRating} />
 
             <div className="rounded-2xl border border-gray-200 bg-white shadow-md">
                 {/* Header */}
@@ -151,7 +213,25 @@ export default function MyJobs() {
                                             {job.userID?.phone ?? "—"}
                                         </td>
                                         <td className="px-6 py-4 text-gray-600">
-                                            {job.price !== undefined ? `$${job.price}` : "—"}
+                                            {job.status === "pending" ? (
+                                                <input
+                                                    type="number"
+                                                    min="0"
+                                                    value={pendingPrices[job._id] || ""}
+                                                    onChange={(e) =>
+                                                        setPendingPrices((prev) => ({
+                                                            ...prev,
+                                                            [job._id]: e.target.value,
+                                                        }))
+                                                    }
+                                                    placeholder="Price"
+                                                    className="w-24 rounded border border-gray-300 px-2 py-1"
+                                                />
+                                            ) : job.price !== undefined ? (
+                                                `$${job.price}`
+                                            ) : (
+                                                "—"
+                                            )}
                                         </td>
                                         <td className="px-6 py-4 text-gray-500">
                                             {new Date(job.createdAt).toLocaleDateString("en-GB", {
@@ -168,12 +248,29 @@ export default function MyJobs() {
                                             </span>
                                         </td>
                                         <td className="px-6 py-4">
-                                            {job.status === "confirmed" && (
+                                            {job.status === "pending" && (
+                                                <div className="flex items-center gap-2">
+                                                    <button
+                                                        onClick={() => handleAccept(job._id)}
+                                                        className="rounded-full bg-blue-600 px-4 py-1.5 text-xs font-semibold text-white hover:bg-blue-700 transition-colors"
+                                                    >
+                                                        Accept
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleCancel(job._id)}
+                                                        className="rounded-full bg-red-600 px-4 py-1.5 text-xs font-semibold text-white hover:bg-red-700 transition-colors"
+                                                    >
+                                                        Cancel
+                                                    </button>
+                                                </div>
+                                            )}
+                                            
+                                            {job.status === "completed" && (
                                                 <button
-                                                    onClick={() => handleMarkDone(job._id)}
-                                                    className="rounded-full bg-purple-600 px-4 py-1.5 text-xs font-semibold text-white hover:bg-purple-700 transition-colors"
+                                                    onClick={() => openRating(job._id)}
+                                                    className="rounded-full bg-green-600 px-4 py-1.5 text-xs font-semibold text-white hover:bg-green-700 transition-colors"
                                                 >
-                                                    Mark Done
+                                                    View Rating
                                                 </button>
                                             )}
                                         </td>
