@@ -1,21 +1,9 @@
-import React from "react";
-import styles from "./ReviewCard.module.css";
-
-type ReviewCardProps = {
+interface ReviewCardProps {
   name: string;
-  date: string; // e.g. "12 / 3 / 2025"
+  date: string;
   text: string;
   avatarColor?: "yellow" | "teal" | "red" | "purple" | "gray";
-};
-
-const colorClassMap: Record<NonNullable<ReviewCardProps["avatarColor"]>, string> =
-  {
-    yellow: styles.avatarYellow,
-    teal: styles.avatarTeal,
-    red: styles.avatarRed,
-    purple: styles.avatarPurple,
-    gray: styles.avatarGray,
-  };
+}
 
 export default function ReviewCard({
   name,
@@ -23,20 +11,40 @@ export default function ReviewCard({
   text,
   avatarColor = "yellow",
 }: ReviewCardProps) {
-  return (
-    <div className={styles.card}>
-          <div className={styles.header}>
-              <div className={`${styles.avatar} ${colorClassMap[avatarColor]}`}>
-                <div className={styles.avatarHead} />
-                <div className={styles.avatarBody} />
-              </div>
+  const colorMap: Record<string, string> = {
+    yellow: "bg-[#F6C34A]",
+    teal: "bg-[#3EE7D8]",
+    red: "bg-[#FF5B5B]",
+    purple: "bg-[#B57BFF]",
+    gray: "bg-[#C9C9C9]",
+  };
 
-          <div className={styles.meta}>
-              <div className={styles.name}>{name}</div>
-              <div className={styles.date}>{date}</div>
+  return (
+    <div className="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm hover:shadow-md transition">
+      
+      {/* Header */}
+      <div className="flex items-center gap-3">
+        <div
+          className={`h-12 w-12 rounded-full flex items-center justify-center relative ${colorMap[avatarColor]}`}
+        >
+          <div className="w-3 h-3 bg-white rounded-full absolute top-3" />
+          <div className="w-5 h-2 bg-white rounded-b-md absolute bottom-3" />
+        </div>
+
+        <div>
+          <div className="font-semibold text-gray-900 text-sm">
+            {name}
           </div>
+          <div className="text-xs text-gray-400 mt-1">
+            {date}
+          </div>
+        </div>
       </div>
-      <p className={styles.text}>{text}</p>
+
+      {/* Text */}
+      <p className="mt-4 text-sm text-gray-700 leading-relaxed">
+        {text}
+      </p>
     </div>
   );
 }

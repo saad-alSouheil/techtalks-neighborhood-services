@@ -101,3 +101,34 @@ export async function PATCH(req: Request) {
         );
     }
 }
+
+// POST: create a new job request (customer hires provider)
+export async function POST(req: Request) {
+    try {
+        await connectDB();
+
+        const { getCurrentUser } = await import('@/lib/getCurrentUser');
+        const user = await getCurrentUser();
+        if (!user) {
+            return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
+        }
+
+        const body = await req.json();
+        const { providerID } = body;
+        if (!providerID) {
+            return NextResponse.json({ error: 'providerID is required' }, { status: 400 });
+        }
+
+        const newJob = await Job.create({
+            userID: user._id,
+            providerID,
+            status: 'pending',
+        });
+
+        return NextResponse.json({ message: 'Job created', job: newJob }, { status: 201 });
+    } catch (error: unknown) {
+        console.error('Error creating job:', error);
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        return NextResponse.json({ error: errorMessage }, { status: 500 });
+    }
+}

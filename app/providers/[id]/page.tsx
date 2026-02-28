@@ -6,6 +6,7 @@ import ProviderInfoCard, {
   type ProviderInfoCardData,
 } from "@/components/ProviderInfoCard";
 import ReviewCard from "@/components/ReviewCard";
+import { useAuthStore } from "@/store/useAuthStore";
 
 type ApiProvider = {
   _id: string;
@@ -59,11 +60,7 @@ function serviceTypeToLabel(serviceType?: string) {
     .join(" ");
 }
 
-function trustScoreToPercent(trustScore?: number) {
-  if (typeof trustScore !== "number" || Number.isNaN(trustScore)) return undefined;
-  if (trustScore <= 5) return Math.max(0, Math.min(100, Math.round((trustScore / 5) * 100)));
-  return Math.max(0, Math.min(100, Math.round(trustScore)));
-}
+
 
 export default function ProviderProfilePage() {
   const params = useParams();
@@ -129,6 +126,7 @@ export default function ProviderProfilePage() {
     };
   }, [providerId]);
 
+  const { user } = useAuthStore();
   const cardData: ProviderInfoCardData | null = useMemo(() => {
     if (!provider) return null;
 
@@ -146,67 +144,79 @@ export default function ProviderProfilePage() {
       verified: Boolean(provider.verification),
       phone,
       locationLabel,
-      trustScorePercent: trustScoreToPercent(provider.trustScore),
+      trustScore: provider.trustScore,
       servicesPerformed,
       description: provider.description,
     };
   }, [provider, servicesPerformed]);
 
   return (
-    <div className="min-h-[60vh] flex justify-center">
-      <div className="w-full max-w-10xl">
-        {loading ? (
-          <div className="text-gray-600">Loading...</div>
-        ) : error ? (
-          <div className="text-red-600 font-medium">{error}</div>
-        ) : cardData ? (
-          <ProviderInfoCard
-            provider={cardData}
-            onHire={() => {
-              // UI-only for now; wire to job request flow when available
-              alert("Hire clicked");
-            }}
-          />
-        ) : (
-          <div className="text-gray-600">No provider data.</div>
-        )}
-        {/* Reviews Row */}
-        <div className="flex bg-white rounded-2xl shadow-md p-6 mt-10">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">Reviews</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
-            {reviews && reviews.length > 0 ? (
-              reviews.slice(0, 3).map((r: Review, idx: number) => {
-                const name = r.userID?.userName || "Anonymous";
-                const created = r.createdAt ? new Date(r.createdAt) : new Date();
-                const date = `${String(created.getDate()).padStart(2, "0")} / ${String(
-                  created.getMonth() + 1
-                ).padStart(2, "0")} / ${created.getFullYear()}`;
-                const text = r.comment || "";
-                const colors: Array<"yellow" | "teal" | "red" | "purple" | "gray"> = [
-                  "teal",
-                  "purple",
-                  "yellow",
-                  "red",
-                  "gray",
-                ];
-                const avatarColor = colors[idx % colors.length];
+  <div className="min-h-screen bg-[#F7F7F7] py-7 px-6 flex justify-center">
+    <div className="w-full max-w-5xl space-y-8">
+      
+      {/* Provider Main Card */}
+      {loading ? (
+        <div className="text-gray-600">Loading...</div>
+      ) : error ? (
+        <div className="text-red-600 font-medium">{error}</div>
+      ) : cardData ? (
+        <ProviderInfoCard
+          provider={cardData}
+          onHire={async () => {
+            if (!user || !user._id) {
+              alert("Please log in to request a job.");
+              return;
+            }
+            try {
+              const res = await fetch("/api/jobs", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ providerID: providerId }),
+              });
+              if (!res.ok) throw new Error("Failed to create job");
+              alert("Job requested successfully");
+            } catch (err: unknown) {
+              console.error(err);
+              alert(err instanceof Error ? err.message : "Unknown error");
+            }
+          }}
+        />
+      ) : (
+        <div className="text-gray-600">No provider data.</div>
+      )}
 
-                return (
-                  <ReviewCard
-                    key={r._id || idx}
-                    name={name}
-                    date={date}
-                    text={text}
-                    avatarColor={avatarColor}
-                  />
-                );
-              })
-            ) : (
-              <div className="text-gray-500">No reviews yet.</div>
-            )}
+      {/* Reviews Section */}
+      <div className="bg-white rounded-3xl shadow-md px-8 py-8">
+        <h2 className="text-2xl font-bold text-gray-900 mb-8">Reviews</h2>
+
+        {reviews.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {reviews.slice(0, 3).map((r, idx) => {
+              const name = r.userID?.userName || "Anonymous";
+              const created = r.createdAt ? new Date(r.createdAt) : new Date();
+              const date = `${created.getDate()} / ${created.getMonth() + 1} / ${created.getFullYear()}`;
+              const text = r.comment || "";
+
+              const colors: Array<
+                "yellow" | "teal" | "red" | "purple" | "gray"
+              > = ["yellow", "teal", "red", "purple", "gray"];
+
+              return (
+                <ReviewCard
+                  key={r._id || idx}
+                  name={name}
+                  date={date}
+                  text={text}
+                  avatarColor={colors[idx % colors.length]}
+                />
+              );
+            })}
           </div>
-        </div>
+        ) : (
+          <div className="text-gray-500">No reviews yet.</div>
+        )}
       </div>
     </div>
-  );
+  </div>
+);
 }
