@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import ProviderCard, { ServiceProvider } from "@/components/ProviderCard";
 import SearchIcon from '@mui/icons-material/Search';
+import BecomeProviderPopup from "@/components/BecomeProvider";
+import { useAuthStore } from "@/store/useAuthStore";
 
 interface ApiProvider {
   _id: string;
@@ -24,11 +26,13 @@ interface Neighborhood {
 }
 
 export default function ServicesPage() {
+  const { user } = useAuthStore();
   const [providers, setProviders] = useState<ServiceProvider[]>([]);
   const [loading, setLoading] = useState(false);
   const [search, setSearch] = useState("");
   const [selectedNeighborhood, setSelectedNeighborhood] = useState("");
   const [neighborhoods, setNeighborhoods] = useState<Neighborhood[]>([]);
+  const [isPopupOpen, setIsPopupOpen] = useState(false);
 
   const colors = [
     "bg-[#00FFE1]",
@@ -103,15 +107,25 @@ export default function ServicesPage() {
 
   return (
     <div className="flex justify-center min-h-screen bg-[#F7F7F7]">
-      <div className="bg-white rounded-3xl shadow-lg p-10 w-full max-w-7xl">
-        
+      <BecomeProviderPopup
+        isOpen={isPopupOpen}
+        onClose={() => setIsPopupOpen(false)}
+      />
+
+      <div className="bg-white rounded-3xl shadow-lg p-10 w-full max-w-7xl relative z-10">
+
         {/* Top Action Row */}
         <div className="flex flex-col lg:flex-row items-center justify-between gap-4 mb-8 bg-[#F7F7F7] rounded-lg p-4 pl-4 pr-4 shadow-sm">
-          
+
           {/* Become Provider Button */}
-          <button className="bg-[#0065FF] text-white px-6 py-2 rounded-full min-w-[300px] font-medium hover:bg-blue-800 transition">
-            Become a provider
-          </button>
+          {!user?.isProvider && (
+            <button
+              onClick={() => setIsPopupOpen(true)}
+              className="bg-[#0065FF] text-white px-6 py-2 rounded-full min-w-75 font-medium hover:bg-blue-800 transition"
+            >
+              Become a provider
+            </button>
+          )}
 
           {/* Search Bar */}
           <div className="relative w-full max-w-md bg-white rounded-full">
@@ -127,7 +141,7 @@ export default function ServicesPage() {
               onClick={handleSearch}
               className="absolute right-4 top-2.5 w-5 h-5 text-gray-500 cursor-pointer"
             >
-            <SearchIcon className="w-5 h-5 text-gray-500" />
+              <SearchIcon className="w-5 h-5 text-gray-500" />
             </button>
           </div>
 
@@ -137,7 +151,7 @@ export default function ServicesPage() {
             onChange={(e) => {
               setSelectedNeighborhood(e.target.value);
             }}
-            className="font-bold border border-gray-300 rounded-sm px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#0065FF] min-w-[300px] bg-white"
+            className="font-bold border border-gray-300 rounded-sm px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#0065FF] min-w-75 bg-white"
           >
             <option value="">Neighbourhood</option>
             {neighborhoods.map((neighborhood) => (

@@ -87,11 +87,72 @@ export async function GET(req: Request) {
     }
 }
 
-// POST route is temporarily disabled as it requires Auth implementation (verifyToken)
-// and strict type checking with the existing User/Provider models.
-/*
+// POST: Become a provider
 export async function POST(req: Request) {
-    // ... implementation pending auth setup ...
+    try {
+        await connectDB();
+        const body = await req.json();
+        const { userID, serviceType, description } = body;
+
+        if (!userID || !serviceType) {
+            return NextResponse.json(
+                { error: 'Missing required fields: userID or serviceType' },
+                { status: 400 }
+            );
+        }
+
+        // 1. Get user to ensure they exist and find their neighborhood
+        const user = await User.findById(userID);
+        if (!user) {
+            return NextResponse.json(
+                { error: 'User not found' },
+                { status: 404 }
+            );
+        }
+
+        // 2. Check if user is already a provider
+        if (user.isProvider) {
+            return NextResponse.json(
+                { error: 'User is already a provider' },
+                { status: 400 }
+            );
+        }
+
+        // 3. Create the provider record
+        const newProvider = await Provider.create({
+            userID,
+            serviceType,
+            description: description || '',
+            neighborhoodID: user.neighborhoodID,
+            trustScore: 0,
+            verification: false, // Default to unverified
+        });
+
+        // 4. Update the user record to indicate they are now a provider
+        user.isProvider = true;
+        await user.save();
+
+        return NextResponse.json(
+            { message: 'Successfully registered as a provider!', provider: newProvider },
+            { status: 201 }
+        );
+
+    } catch (error: unknown) {
+        console.error('Error creating provider:', error);
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+
+        // Handle MongoDB duplicate key error (11000) for unique userID
+        if (error && typeof error === 'object' && 'code' in error && error.code === 11000) {
+            return NextResponse.json(
+                { message: 'Registration failed', error: 'You are already registered as a provider' },
+                { status: 400 }
+            );
+        }
+
+        return NextResponse.json(
+            { message: 'Internal server error', error: errorMessage },
+            { status: 500 }
+        );
+    }
 }
-*/
 

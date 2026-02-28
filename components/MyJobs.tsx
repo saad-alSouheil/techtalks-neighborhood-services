@@ -45,6 +45,9 @@ export default function MyJobs() {
         comment?: string;
     } | null>(null);
 
+    // Empty rating popup state
+    const [emptyRatingOpen, setEmptyRatingOpen] = useState(false);
+
     // Fetch provider ID for the current user
     const fetchProviderID = useCallback(async (userId: string) => {
         try {
@@ -139,7 +142,7 @@ export default function MyJobs() {
                 });
                 setRatingOpen(true);
             } else {
-                setError("No rating available for this job");
+                setEmptyRatingOpen(true);
             }
         } catch (err: unknown) {
             console.error("Error fetching rating:", err);
@@ -165,6 +168,36 @@ export default function MyJobs() {
         <>
             {/* rating popup */}
             <ViewRating open={ratingOpen} onClose={() => setRatingOpen(false)} rating={currentRating} />
+
+            {/* empty rating popup */}
+            {emptyRatingOpen && (
+                <div
+                    className="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
+                    role="dialog"
+                    aria-modal="true"
+                    aria-labelledby="empty-rating-title"
+                >
+                    <div className="relative w-full max-w-sm rounded-2xl bg-white p-6 shadow-xl text-center">
+                        <div className="mb-4 text-orange-500">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-12 h-12 mx-auto">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                            </svg>
+                        </div>
+                        <h2 id="empty-rating-title" className="mb-2 text-xl font-bold text-gray-800">
+                            No Rating Yet
+                        </h2>
+                        <p className="mb-6 text-gray-600">
+                            The customer hasn&apos;t provided a rating for this job yet. Check back later!
+                        </p>
+                        <button
+                            onClick={() => setEmptyRatingOpen(false)}
+                            className="rounded-full bg-purple-600 px-6 py-2 font-semibold text-white hover:bg-purple-700 transition-colors"
+                        >
+                            Okay
+                        </button>
+                    </div>
+                </div>
+            )}
 
             <div className="rounded-2xl border border-gray-200 bg-white shadow-md">
                 {/* Header */}
@@ -264,7 +297,7 @@ export default function MyJobs() {
                                                     </button>
                                                 </div>
                                             )}
-                                            
+
                                             {job.status === "completed" && (
                                                 <button
                                                     onClick={() => openRating(job._id)}

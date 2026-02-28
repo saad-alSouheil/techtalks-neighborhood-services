@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { useAuthStore, AuthState } from "@/store/useAuthStore";
 import PersonIcon from "@mui/icons-material/Person";
 import VerifiedIcon from "@mui/icons-material/Verified";
@@ -11,12 +12,32 @@ import MyJobs from "@/components/MyJobs";
 const Profile = () => {
   const user = useAuthStore((state: AuthState) => state.user);
 
+  const [providerDetails, setProviderDetails] = useState<{
+    _id: string;
+    serviceType: string;
+    description: string;
+  } | null>(null);
+
+  useEffect(() => {
+    if (user?.isProvider && user?._id) {
+      // Fetch provider details by user ID
+      fetch(`/api/providers?userID=${user._id}`)
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.providers && data.providers.length > 0) {
+            setProviderDetails(data.providers[0]);
+          }
+        })
+        .catch((err) => console.error("Error fetching provider details:", err));
+    }
+  }, [user]);
+
   const profile = {
     name: user?.userName ?? "Guest",
     phone: "80 546 456",
     location: "Beirut, Ras Beirut",
-    profession: user?.isProvider ? "Service Provider" : "Customer",
-    description: "Member of the TechTalks Neighborhood Services platform.",
+    profession: user?.isProvider ? (providerDetails?.serviceType ?? "Service Provider") : "Client",
+    description: providerDetails?.description ?? "Member of the TechTalks Neighborhood Services platform.",
   };
 
   return (
@@ -52,19 +73,23 @@ const Profile = () => {
             </div>
 
             {/* Description */}
-            <div>
-              <h2 className="mb-2 text-base font-semibold text-gray-800">Description</h2>
-              <p className="whitespace-pre-line text-gray-600">{profile.description}</p>
-            </div>
+            {user?.isProvider && (
+              <div>
+                <h2 className="mb-2 text-base font-semibold text-gray-800">Description</h2>
+                <p className="whitespace-pre-line text-gray-600">
+                  {profile.description || "No description provided."}
+                </p>
+              </div>
+            )}
           </div>
         </div>
       </div>
 
-      {/* Requested Services Table - For Customers */}
-      {user?._id && !user?.isProvider && <RequestedServices userID={user._id} />}
-
       {/* My Jobs Table - For Providers */}
       {user?.isProvider && <MyJobs />}
+
+      {/* Requested Services Table */}
+      {user?._id && <RequestedServices userID={user._id} />}
     </div>
   );
 };
