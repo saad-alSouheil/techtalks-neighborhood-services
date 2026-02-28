@@ -6,6 +6,7 @@ import VerifiedIcon from "@mui/icons-material/Verified";
 import PhoneIcon from "@mui/icons-material/Phone";
 import LocationOnIcon from "@mui/icons-material/LocationOn";
 import RequestedServices from "@/components/RequestedServices";
+import MyJobs from "@/components/MyJobs";
 
 const Profile = () => {
   const user = useAuthStore((state: AuthState) => state.user);
@@ -59,8 +60,11 @@ const Profile = () => {
         </div>
       </div>
 
-      {/* Requested Services Table */}
-      {user?._id && <RequestedServices userID={user._id} />}
+      {/* Requested Services Table - For Customers */}
+      {user?._id && !user?.isProvider && <RequestedServices userID={user._id} />}
+
+      {/* My Jobs Table - For Providers */}
+      {user?.isProvider && <MyJobs />}
     </div>
   );
 };

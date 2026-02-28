@@ -17,8 +17,14 @@ export async function GET(req: Request) {
         const neighborhood = searchParams.get('neighborhood');
         const service = searchParams.get('service');
         const query = searchParams.get('query'); // Name or description search
+        const userID = searchParams.get('userID'); // Filter by provider's userID
 
         const filter: QueryFilter<IProvider> = {};
+
+        // 0. User ID Filter (get provider for a specific user)
+        if (userID) {
+            filter.userID = userID;
+        }
 
         // 1. Service Type Filter
         if (service) {
