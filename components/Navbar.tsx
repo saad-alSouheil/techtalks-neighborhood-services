@@ -15,6 +15,7 @@ export default function Navbar() {
     await fetch("/api/auth/logout", { method: "POST" });
 
     clearUser();   // instant UI update
+    localStorage.removeItem("lastActivityTime"); // clear inactivity tracking
     router.push("/");
   };
 
