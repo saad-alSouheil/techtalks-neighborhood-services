@@ -4,8 +4,16 @@ import { useEffect, useState, useCallback } from "react";
 import WorkOutlineIcon from "@mui/icons-material/WorkOutline";
 import { useAuthStore } from "@/store/useAuthStore";
 import ViewRating from "./ViewRating";
+import JobReq from "./JobReq";
 
 type JobStatus = "pending" | "confirmed" | "completed" | "cancelled";
+
+interface UserRef {
+    _id?: string;
+    userName?: string;
+    phone?: string;
+    location?: string;
+}
 
 interface Job {
     _id: string;
@@ -13,11 +21,8 @@ interface Job {
     price?: number;
     completedDate?: string;
     createdAt: string;
-    userID: {
-        _id: string;
-        userName: string;
-        phone: string;
-    };
+    jobDesc?: string;
+    userID?: UserRef;
 }
 
 const statusStyles: Record<JobStatus, string> = {
@@ -33,7 +38,10 @@ export default function MyJobs() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [providerID, setProviderID] = useState<string | null>(null);
-    const [pendingPrices, setPendingPrices] = useState<Record<string, string>>({});
+
+    // modal state for viewing details / accepting / cancelling
+    const [selectedJob, setSelectedJob] = useState<Job | null>(null);
+    const [isJobReqOpen, setIsJobReqOpen] = useState(false);
 
     // view rating state
     const [ratingOpen, setRatingOpen] = useState(false);
@@ -81,15 +89,8 @@ export default function MyJobs() {
         }
     }, []);
 
-    // Handle accepting a pending job with a price
-    const handleAccept = async (jobID: string) => {
-        const priceStr = pendingPrices[jobID];
-        const price = parseFloat(priceStr);
-        if (isNaN(price) || price < 0) {
-            setError("Please enter a valid price");
-            return;
-        }
-
+    // Handlers invoked by JobReq modal
+    const handleModalAccept = useCallback(async (jobID: string, price: number) => {
         try {
             const res = await fetch("/api/jobs", {
                 method: "PATCH",
@@ -97,16 +98,16 @@ export default function MyJobs() {
                 body: JSON.stringify({ jobID, status: "confirmed", price }),
             });
             if (!res.ok) throw new Error("Failed to accept job");
-            setPendingPrices((prev) => ({ ...prev, [jobID]: "" }));
-            fetchJobs(providerID!);
+            // refresh list
+            if (providerID) await fetchJobs(providerID);
         } catch (err: unknown) {
             console.error("Error accepting job:", err);
             setError(err instanceof Error ? err.message : "Unknown error");
+            throw err;
         }
-    };
+    }, [providerID, fetchJobs]);
 
-    // Handle cancelling a pending job (no price set)
-    const handleCancel = async (jobID: string) => {
+    const handleModalCancel = useCallback(async (jobID: string) => {
         try {
             const res = await fetch("/api/jobs", {
                 method: "PATCH",
@@ -114,14 +115,13 @@ export default function MyJobs() {
                 body: JSON.stringify({ jobID, status: "cancelled" }),
             });
             if (!res.ok) throw new Error("Failed to cancel job");
-            // clear any entered price
-            setPendingPrices((prev) => ({ ...prev, [jobID]: "" }));
-            fetchJobs(providerID!);
+            if (providerID) await fetchJobs(providerID);
         } catch (err: unknown) {
             console.error("Error cancelling job:", err);
             setError(err instanceof Error ? err.message : "Unknown error");
+            throw err;
         }
-    };
+    }, [providerID, fetchJobs]);
 
     // Fetch and view rating for a completed job
     const openRating = async (jobID: string) => {
@@ -228,12 +228,10 @@ export default function MyJobs() {
                         <table className="w-full text-sm">
                             <thead>
                                 <tr className="bg-gray-50 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">
-                                    <th className="px-6 py-3">Customer</th>
-                                    <th className="px-6 py-3">Phone</th>
-                                    <th className="px-6 py-3">Price</th>
-                                    <th className="px-6 py-3">Date Booked</th>
+                                    <th className="px-6 py-3">Client</th>
                                     <th className="px-6 py-3">Status</th>
-                                    <th className="px-6 py-3">Action</th>
+                                    <th className="px-6 py-3">Date</th>
+                                    <th className="px-6 py-3">Actions</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-100">
@@ -242,29 +240,12 @@ export default function MyJobs() {
                                         <td className="px-6 py-4 font-medium text-gray-800">
                                             {job.userID?.userName ?? "—"}
                                         </td>
-                                        <td className="px-6 py-4 text-gray-600">
-                                            {job.userID?.phone ?? "—"}
-                                        </td>
-                                        <td className="px-6 py-4 text-gray-600">
-                                            {job.status === "pending" ? (
-                                                <input
-                                                    type="number"
-                                                    min="0"
-                                                    value={pendingPrices[job._id] || ""}
-                                                    onChange={(e) =>
-                                                        setPendingPrices((prev) => ({
-                                                            ...prev,
-                                                            [job._id]: e.target.value,
-                                                        }))
-                                                    }
-                                                    placeholder="Price"
-                                                    className="w-24 rounded border border-gray-300 px-2 py-1"
-                                                />
-                                            ) : job.price !== undefined ? (
-                                                `$${job.price}`
-                                            ) : (
-                                                "—"
-                                            )}
+                                        <td className="px-6 py-4">
+                                            <span
+                                                className={`inline-block rounded-full px-3 py-1 text-xs font-semibold capitalize ${statusStyles[job.status]}`}
+                                            >
+                                                {job.status}
+                                            </span>
                                         </td>
                                         <td className="px-6 py-4 text-gray-500">
                                             {new Date(job.createdAt).toLocaleDateString("en-GB", {
@@ -274,38 +255,26 @@ export default function MyJobs() {
                                             })}
                                         </td>
                                         <td className="px-6 py-4">
-                                            <span
-                                                className={`inline-block rounded-full px-3 py-1 text-xs font-semibold capitalize ${statusStyles[job.status]}`}
-                                            >
-                                                {job.status}
-                                            </span>
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            {job.status === "pending" && (
-                                                <div className="flex items-center gap-2">
-                                                    <button
-                                                        onClick={() => handleAccept(job._id)}
-                                                        className="rounded-full bg-blue-600 px-4 py-1.5 text-xs font-semibold text-white hover:bg-blue-700 transition-colors"
-                                                    >
-                                                        Accept
-                                                    </button>
-                                                    <button
-                                                        onClick={() => handleCancel(job._id)}
-                                                        className="rounded-full bg-red-600 px-4 py-1.5 text-xs font-semibold text-white hover:bg-red-700 transition-colors"
-                                                    >
-                                                        Cancel
-                                                    </button>
-                                                </div>
-                                            )}
-
-                                            {job.status === "completed" && (
+                                            <div className="flex items-center gap-2">
                                                 <button
-                                                    onClick={() => openRating(job._id)}
-                                                    className="rounded-full bg-green-600 px-4 py-1.5 text-xs font-semibold text-white hover:bg-green-700 transition-colors"
+                                                    onClick={() => {
+                                                        setSelectedJob(job);
+                                                        setIsJobReqOpen(true);
+                                                    }}
+                                                    className="rounded-full bg-indigo-600 px-4 py-1.5 text-xs font-semibold text-white hover:bg-indigo-700 transition-colors"
                                                 >
-                                                    View Rating
+                                                    View Details
                                                 </button>
-                                            )}
+
+                                                {job.status === "completed" && (
+                                                    <button
+                                                        onClick={() => openRating(job._id)}
+                                                        className="rounded-full bg-green-600 px-3 py-1 text-xs font-semibold text-white hover:bg-green-700 transition-colors"
+                                                    >
+                                                        View Rating
+                                                    </button>
+                                                )}
+                                            </div>
                                         </td>
                                     </tr>
                                 ))}
@@ -314,6 +283,18 @@ export default function MyJobs() {
                     </div>
                 )}
             </div>
+
+            {/* Job details modal */}
+            <JobReq
+                open={isJobReqOpen}
+                onClose={() => {
+                    setIsJobReqOpen(false);
+                    setSelectedJob(null);
+                }}
+                job={selectedJob}
+                onAccept={handleModalAccept}
+                onCancel={handleModalCancel}
+            />
         </>
     );
 }
