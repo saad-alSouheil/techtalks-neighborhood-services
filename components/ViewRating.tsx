@@ -43,33 +43,38 @@ export default function ViewRating({ open, onClose, rating }: ViewRatingProps) {
           </svg>
         </button>
 
-        <h2 id="rating-title" className="mb-6 text-center text-xl font-bold text-orange-500">
+        <h2 id="rating-title" className="mb-6 text-center text-4xl font-bold text-[#FFA902]">
           Rating
         </h2>
 
+        <div className="mb-4 text-center border-b-2 border-gray-300"></div>
+
         <div className="space-y-3 text-gray-800">
           <div className="flex justify-between">
-            <span>Reliability:</span>
-            <span>{rating.reliability}</span>
+            <span className="font-bold text-lg">Reliability :</span>
+            <span className="mr-55">{rating.reliability}</span>
           </div>
           <div className="flex justify-between">
-            <span>Punctuality:</span>
-            <span>{rating.punctuality}</span>
+            <span className="font-bold text-lg">Punctuality :</span>
+            <span className="mr-55">{rating.punctuality}</span>
           </div>
           <div className="flex justify-between">
-            <span>Price Honesty:</span>
-            <span>{rating.priceHonesty}</span>
+            <span className="font-bold text-lg">Price Honesty :</span>
+            <span className="mr-55">{rating.priceHonesty}</span>
           </div>
+                  <div className="mb-4 mr-50 border-b-2 border-gray-300"></div>
+
           <div className="flex justify-between font-semibold">
-            <span>Total:</span>
-            <span>{typeof rating.total === "number" ? rating.total.toFixed(1) : rating.total}</span>
+            <span className="font-bold text-xl text-[#FFA902]">Total :</span>
+            <span className="mr-50 bg-[#FFA902] px-3 py-2 rounded-full">{typeof rating.total === "number" ? rating.total.toFixed(1) : rating.total}</span>
           </div>
         </div>
+                  <div className="mt-10 mb-4 mr-50 border-b-2 border-gray-300"></div>
 
         {rating.comment && (
           <div className="mt-4">
-            <p className="mb-1 text-sm font-medium text-gray-700">Comment:</p>
-            <p className="text-sm leading-relaxed text-gray-600">
+            <p className="mb-1 text-lg font-bold text-gray-800">Comment :</p>
+            <p className="leading-relaxed text-gray-600">
               {rating.comment}
             </p>
           </div>

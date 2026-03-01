@@ -84,18 +84,20 @@ export default function JobReq({ open, onClose, job, onAccept, onCancel }: Props
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
             <div className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-xl">
                 <div className="flex items-start justify-between">
-                    <h3 className="text-lg font-bold">Job Details</h3>
+                    <h3 className="text-4xl text-[#FFA902] font-bold mb-4">Job Details</h3>
                     <button onClick={onClose} className="text-gray-500 hover:text-gray-700">✕</button>
                 </div>
+    
+            <div className="mb-4 text-center border-b-2 border-gray-300"></div>
 
-                <div className="mt-4 space-y-3 text-sm text-gray-700">
+                <div className="mt-4 space-y-3 text-gray-900">
                     <div>
-                        <div className="text-xs text-gray-500">Client</div>
+                        <div className="text-sm text-[#0065FF]">Client</div>
                         <div className="font-medium">{job.userID?.userName ?? "—"}</div>
                     </div>
 
                     <div>
-                        <div className="text-xs text-gray-500">Location</div>
+                        <div className="text-sm text-[#0065FF]">Location</div>
                         <div className="font-medium">
                             {job.userID?.neighborhoodID?.name
                                 ? `${job.userID?.neighborhoodID?.name}${job.userID?.neighborhoodID?.city ? `, ${job.userID?.neighborhoodID?.city}` : ''}`
@@ -104,25 +106,25 @@ export default function JobReq({ open, onClose, job, onAccept, onCancel }: Props
                     </div>
 
                     <div>
-                        <div className="text-xs text-gray-500">Phone</div>
+                        <div className="text-sm text-[#0065FF]">Phone</div>
                         <div className="font-medium">{job.userID?.phone ?? "—"}</div>
                     </div>
 
                     <div>
-                        <div className="text-xs text-gray-500">Job Description</div>
-                        <div className="whitespace-pre-line text-gray-800">{job.jobDesc ?? "—"}</div>
+                        <div className="text-sm text-[#0065FF]">Description</div>
+                        <div className="whitespace-pre-line text-gray-800">{job.jobDesc ?? "NO DESCRIPTION"}</div>
                     </div>
 
                     <div>
-                        <div className="text-xs text-gray-500">Price</div>
+                        <div className="text-sm text-[#0065FF]">Price</div>
                         {job.status === "pending" ? (
                             <input
                                 type="number"
                                 min="0"
                                 value={price}
                                 onChange={(e) => setPrice(e.target.value)}
-                                className="mt-1 w-36 rounded border border-gray-300 px-3 py-2"
-                                placeholder="Enter price"
+                                className="mt-1 w-25 rounded-full border border-gray-300 px-5 py-1"
+                                placeholder="Set your price"
                             />
                         ) : (
                             <div className="mt-1 font-medium text-gray-800">
@@ -132,28 +134,22 @@ export default function JobReq({ open, onClose, job, onAccept, onCancel }: Props
                     </div>
                 </div>
 
-                <div className="mt-6 flex justify-end gap-3">
-                    <button
-                        onClick={onClose}
-                        disabled={submitting}
-                        className="rounded-full border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
-                    >
-                        Close
-                    </button>
+                <div className="mt-6 flex justify-center gap-3">
+                    
 
                     {job.status === "pending" && (
                         <>
                             <button
                                 onClick={handleCancel}
                                 disabled={submitting}
-                                className="rounded-full bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-700"
+                                className="rounded-full bg-[#9102FF] text-white px-4 py-2 font-semibold hover:bg-[#7A00D9] transition-colors   "
                             >
                                 Cancel
                             </button>
                             <button
                                 onClick={handleAccept}
                                 disabled={submitting}
-                                className="rounded-full bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700"
+                                className="rounded-full bg-[#FFA902] px-4 py-2 font-semibold text-white hover:bg-[#FF8C00] transition-colors"
                             >
                                 Accept
                             </button>
