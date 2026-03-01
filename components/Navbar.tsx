@@ -15,6 +15,8 @@ export default function Navbar() {
 
     clearUser();   // instant UI update
     window.location.href = "/"; // Force hard refresh to wipe Next.js cache completely
+    localStorage.removeItem("lastActivityTime"); // clear inactivity tracking
+    router.push("/");
   };
 
   return (

@@ -21,6 +21,11 @@ const jobSchema = new Schema<IJob>(
       },
       default: 'pending',
     },
+    jobDesc: {
+      type: String,
+      trim: true,
+      default: '',
+    },
     price: {
       type: Number,
       min: [0, 'Price cannot be negative'],

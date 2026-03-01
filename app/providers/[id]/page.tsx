@@ -6,6 +6,7 @@ import ProviderInfoCard, {
   type ProviderInfoCardData,
 } from "@/components/ProviderInfoCard";
 import ReviewCard from "@/components/ReviewCard";
+import JobDescModal from "@/components/JobDescModal";
 import { useAuthStore } from "@/store/useAuthStore";
 
 type ApiProvider = {
@@ -127,6 +128,7 @@ export default function ProviderProfilePage() {
   }, [providerId]);
 
   const { user } = useAuthStore();
+  const [isDescOpen, setIsDescOpen] = useState(false);
   const cardData: ProviderInfoCardData | null = useMemo(() => {
     if (!provider) return null;
 
@@ -160,27 +162,37 @@ export default function ProviderProfilePage() {
       ) : error ? (
         <div className="text-red-600 font-medium">{error}</div>
       ) : cardData ? (
-        <ProviderInfoCard
-          provider={cardData}
-          onHire={async () => {
-            if (!user || !user._id) {
-              alert("Please log in to request a job.");
-              return;
-            }
-            try {
-              const res = await fetch("/api/jobs", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ providerID: providerId }),
-              });
-              if (!res.ok) throw new Error("Failed to create job");
-              alert("Job requested successfully");
-            } catch (err: unknown) {
-              console.error(err);
-              alert(err instanceof Error ? err.message : "Unknown error");
-            }
-          }}
-        />
+        <>
+          <ProviderInfoCard
+            provider={cardData}
+            onHire={() => {
+              if (!user || !user._id) {
+                alert("Please log in to request a job.");
+                return;
+              }
+              setIsDescOpen(true);
+            }}
+          />
+          <JobDescModal
+            isOpen={isDescOpen}
+            onClose={() => setIsDescOpen(false)}
+            onSubmit={async (jobDesc) => {
+              setIsDescOpen(false);
+              try {
+                const res = await fetch("/api/jobs", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ providerID: providerId, jobDesc }),
+                });
+                if (!res.ok) throw new Error("Failed to create job");
+                alert("Job requested successfully");
+              } catch (err: unknown) {
+                console.error(err);
+                alert(err instanceof Error ? err.message : "Unknown error");
+              }
+            }}
+          />
+        </>
       ) : (
         <div className="text-gray-600">No provider data.</div>
       )}

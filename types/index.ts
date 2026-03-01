@@ -59,6 +59,7 @@ export interface IJob extends Document {
   userID: Types.ObjectId; // FK to User (customer)
   providerID: Types.ObjectId; // FK to Provider
   status: JobStatus;
+  jobDesc?: string; // Description provided by customer
   price?: number; // Agreed service price
   completedDate?: Date;
   createdAt: Date;

@@ -15,6 +15,7 @@ export async function GET(req: Request) {
         const userID = searchParams.get('userID');
         const providerID = searchParams.get('providerID');
         const status = searchParams.get('status');
+        const jobDesc = searchParams.get('jobDesc');
 
         const filter: QueryFilter<IJob> = {};
 
@@ -30,8 +31,16 @@ export async function GET(req: Request) {
             filter.status = status;
         }
 
+        if (jobDesc) {
+            filter.jobDesc = { $regex: jobDesc, $options: 'i' } as any;
+        }
+
         const jobs = await Job.find(filter)
-            .populate('userID', 'userName email phone')
+            .populate({
+                path: 'userID',
+                select: 'userName email phone neighborhoodID',
+                populate: { path: 'neighborhoodID', select: 'name city' },
+            })
             .populate({
                 path: 'providerID',
                 populate: { path: 'userID', select: 'userName email phone' },
@@ -136,7 +145,7 @@ export async function POST(req: Request) {
         }
 
         const body = await req.json();
-        const { providerID } = body;
+        const { providerID, jobDesc } = body;
         if (!providerID) {
             return NextResponse.json({ error: 'providerID is required' }, { status: 400 });
         }
@@ -145,6 +154,7 @@ export async function POST(req: Request) {
             userID: user._id,
             providerID,
             status: 'pending',
+            jobDesc: jobDesc || '',
         });
 
         return NextResponse.json({ message: 'Job created', job: newJob }, { status: 201 });
