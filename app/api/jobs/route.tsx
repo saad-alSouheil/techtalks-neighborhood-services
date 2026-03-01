@@ -32,7 +32,7 @@ export async function GET(req: Request) {
         }
 
         if (jobDesc) {
-            filter.jobDesc = { $regex: jobDesc, $options: 'i' } as any;
+            filter.jobDesc = { $regex: jobDesc, $options: 'i' };
         }
 
         const jobs = await Job.find(filter)
@@ -73,9 +73,9 @@ export async function PATCH(req: Request) {
         const body = await req.json();
         const { jobID, status, price } = body;
 
-        if (!jobID || !status) {
+        if (!jobID || (!status && price === undefined)) {
             return NextResponse.json(
-                { error: 'Missing required fields: jobID, status' },
+                { error: 'Missing required fields: jobID, and either status or price' },
                 { status: 400 }
             );
         }
@@ -95,7 +95,12 @@ export async function PATCH(req: Request) {
             return NextResponse.json({ error: 'Unauthorized to modify this job' }, { status: 403 });
         }
 
-        const updateData: { status: string; completedDate?: Date; price?: number } = { status };
+        if (status === 'confirmed' && !isCustomer) {
+            return NextResponse.json({ error: 'Only the client can confirm the job' }, { status: 403 });
+        }
+
+        const updateData: { status?: string; completedDate?: Date; price?: number } = {};
+        if (status) updateData.status = status;
 
         // allow price to be set when accepting job
         if (price !== undefined) {

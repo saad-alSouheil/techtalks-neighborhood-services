@@ -30,11 +30,11 @@ interface Props {
     open: boolean;
     onClose: () => void;
     job: Job | null;
-    onAccept: (jobID: string, price: number) => Promise<void>;
+    onSubmitQuote: (jobID: string, price: number) => Promise<void>;
     onCancel: (jobID: string) => Promise<void>;
 }
 
-export default function JobReq({ open, onClose, job, onAccept, onCancel }: Props) {
+export default function JobReq({ open, onClose, job, onSubmitQuote, onCancel }: Props) {
     const [price, setPrice] = useState<string>("");
     const [submitting, setSubmitting] = useState(false);
 
@@ -48,7 +48,7 @@ export default function JobReq({ open, onClose, job, onAccept, onCancel }: Props
 
     if (!open || !job) return null;
 
-    const handleAccept = async () => {
+    const handleSubmitQuote = async () => {
         const p = parseFloat(price);
         if (isNaN(p) || p < 0) {
             alert("Please enter a valid price");
@@ -56,11 +56,11 @@ export default function JobReq({ open, onClose, job, onAccept, onCancel }: Props
         }
         setSubmitting(true);
         try {
-            await onAccept(job._id, p);
+            await onSubmitQuote(job._id, p);
             onClose();
         } catch (err) {
             console.error(err);
-            alert("Failed to accept job");
+            alert("Failed to submit quote");
         } finally {
             setSubmitting(false);
         }
@@ -87,8 +87,8 @@ export default function JobReq({ open, onClose, job, onAccept, onCancel }: Props
                     <h3 className="text-4xl text-[#FFA902] font-bold mb-4">Job Details</h3>
                     <button onClick={onClose} className="text-gray-500 hover:text-gray-700">✕</button>
                 </div>
-    
-            <div className="mb-4 text-center border-b-2 border-gray-300"></div>
+
+                <div className="mb-4 text-center border-b-2 border-gray-300"></div>
 
                 <div className="mt-4 space-y-3 text-gray-900">
                     <div>
@@ -117,7 +117,7 @@ export default function JobReq({ open, onClose, job, onAccept, onCancel }: Props
 
                     <div>
                         <div className="text-sm text-[#0065FF]">Price</div>
-                        {job.status === "pending" ? (
+                        {job.status === "pending" && job.price === undefined ? (
                             <input
                                 type="number"
                                 min="0"
@@ -131,13 +131,18 @@ export default function JobReq({ open, onClose, job, onAccept, onCancel }: Props
                                 {job.price !== undefined ? `$${job.price}` : "—"}
                             </div>
                         )}
+                        {job.status === "pending" && job.price !== undefined && (
+                            <div className="mt-2 text-sm font-semibold text-[#FFA902] bg-yellow-50 px-3 py-1.5 rounded-md inline-block border border-yellow-200">
+                                Awaiting Client Approval
+                            </div>
+                        )}
                     </div>
                 </div>
 
                 <div className="mt-6 flex justify-center gap-3">
-                    
 
-                    {job.status === "pending" && (
+
+                    {job.status === "pending" && job.price === undefined && (
                         <>
                             <button
                                 onClick={handleCancel}
@@ -147,13 +152,22 @@ export default function JobReq({ open, onClose, job, onAccept, onCancel }: Props
                                 Cancel
                             </button>
                             <button
-                                onClick={handleAccept}
+                                onClick={handleSubmitQuote}
                                 disabled={submitting}
                                 className="rounded-full bg-[#FFA902] px-4 py-2 font-semibold text-white hover:bg-[#FF8C00] transition-colors"
                             >
-                                Accept
+                                Submit Quote
                             </button>
                         </>
+                    )}
+                    {job.status === "pending" && job.price !== undefined && (
+                        <button
+                            onClick={handleCancel}
+                            disabled={submitting}
+                            className="rounded-full bg-[#9102FF] text-white px-4 py-2 font-semibold hover:bg-[#7A00D9] transition-colors"
+                        >
+                            Cancel Job
+                        </button>
                     )}
                 </div>
             </div>

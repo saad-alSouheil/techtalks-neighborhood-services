@@ -4,6 +4,11 @@ interface User {
   _id: string;
   userName: string;
   isProvider: boolean;
+  phone?: string;
+  neighborhoodID?: {
+    name?: string;
+    city?: string;
+  };
 }
 
 export interface AuthState {
