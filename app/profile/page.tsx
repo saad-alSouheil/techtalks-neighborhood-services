@@ -43,7 +43,7 @@ const Profile = () => {
   };
 
   return (
-    <div className="w-full max-w-4xl space-y-6">
+    <div className="w-full max-w-6xl space-y-6 justify-center mx-auto">
       {/* Profile Card */}
       <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-md">
         <div className="flex flex-col gap-6 sm:flex-row sm:items-start">
