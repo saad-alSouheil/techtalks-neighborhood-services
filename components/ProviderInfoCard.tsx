@@ -1,4 +1,5 @@
-import VerifiedIcon from '@mui/icons-material/Verified';import FmdGoodIcon from '@mui/icons-material/FmdGood';import PersonOutlineIcon from "@mui/icons-material/PersonOutline";
+import { useEffect, useState } from 'react';
+import VerifiedIcon from '@mui/icons-material/Verified';import FmdGoodIcon from '@mui/icons-material/FmdGood';
 import PhoneIcon from '@mui/icons-material/Phone';import StarsIcon from "@mui/icons-material/Stars";
 import WorkHistoryIcon from '@mui/icons-material/WorkHistory';
 export type ProviderInfoCardData = {
@@ -19,13 +20,28 @@ export default function ProviderInfoCard({
   provider: ProviderInfoCardData;
   onHire?: () => void;
 }) {
+  const [avatarColor, setAvatarColor] = useState<string>('');
+
+  const colors = [
+    "bg-[#00FFE1]",
+    "bg-[#FFD279]",
+    "bg-[#ff5e5e]",
+    "bg-[#02FF80]",
+    "bg-[#efbbfa]",
+    "bg-[#fcea42]",
+  ];
+
+  useEffect(() => {
+    setAvatarColor(colors[Math.floor(Math.random() * colors.length)]);
+  }, []);
+
   return (
     <div className="bg-white rounded-3xl shadow-md px-8 py-8">
       <div className="flex gap-6">
         
         {/* Avatar */}
-        <div className="h-24 w-24 rounded-full bg-gradient-to-br from-purple-400 to-purple-600 flex items-center justify-center shrink-0">
-          <PersonOutlineIcon className="text-white text-4xl" />
+        <div className={`h-24 w-24 rounded-full flex items-center justify-center shrink-0 text-white text-4xl font-bold ${avatarColor}`}>
+          {provider.name.charAt(0).toUpperCase()}
         </div>
 
         {/* Main Info */}
@@ -94,10 +110,10 @@ export default function ProviderInfoCard({
       {/* Description + Button */}
       <div className="flex justify-between items-center">
         <div>
-          <h3 className="text-[#0065FF] font-bold mb-2 ml-3 text-lg">
+          <h3 className="text-[#0065FF] font-bold mb-2 ml-3 text-xl">
             Description
           </h3>
-          <p className="ml-3 whitespace-pre-line max-w-xl">
+          <p className="ml-3 whitespace-pre-line max-w-xl text-lg">
             {provider.description || "—"}
           </p>
         </div>

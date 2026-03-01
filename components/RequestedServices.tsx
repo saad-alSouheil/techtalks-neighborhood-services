@@ -114,7 +114,7 @@ export default function RequestedServices({ userID }: Props) {
                     <div className="overflow-x-auto">
                         <table className="w-full text-sm">
                             <thead>
-                                <tr className="bg-gray-50 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                                <tr className=" tbg-gray-50 text-left text-xs font-semibold text-gray-500 uppercaseracking-wide">
                                     <th className="px-6 py-3">Service</th>
                                     <th className="px-6 py-3">Provider</th>
                                     <th className="px-6 py-3">Phone</th>
