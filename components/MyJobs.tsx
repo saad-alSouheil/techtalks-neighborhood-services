@@ -204,7 +204,7 @@ export default function MyJobs() {
                 <div className="flex items-center gap-2 px-6 py-4 border-b border-gray-100">
                     <h2 className="text-3xl font-bold text-gray-900">My Jobs</h2>
                     {jobs.length > 0 && (
-                        <span className="ml-auto text-sm text-[#FFA902]">{jobs.length} total</span>
+                        <span className="ml-auto text-sm text-gray-700 bg-gray-50/50 px-5 py-1.5 rounded-full font-semibold">{jobs.length} total</span>
                     )}
                 </div>
 
@@ -223,51 +223,53 @@ export default function MyJobs() {
 
                 {/* Table */}
                 {!loading && jobs.length > 0 && (
-                    <div className="overflow-x-auto mt-4">
-                        <table className="w-3/4 min-w-max table-auto justify-center mx-auto">
+                    <div className="overflow-x-auto">
+                        <table className="w-full min-w-max table-auto justify-center mx-auto">
                             <thead>
-                                <tr className="bg-[#FFD665] h-15 text-center text-xl text-black font-semibold tracking-wide shadow-sm">
+                                <tr className="bg-gray-50/50 text-center border-b border-gray-200 uppercase text-sm font-semibold text-gray-500 tracking-wide">
                                     <th className="px-6 py-3 ">Client</th>
+                                    <th className="px-6 py-3">Date Booked</th>
                                     <th className="px-6 py-3">Status</th>
-                                    <th className="px-6 py-3">Date</th>
                                     <th className="px-6 py-3 "></th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-[#FFA902]">
+                            <tbody className="divide-y divide-gray-100">
                                 {jobs.map((job) => (
                                     <tr
                                         key={job._id}
-                                        className={`transition-colors hover:bg-[#F2F2F2] ${
-                                            job.status === "pending" ? "bg-[#FFE665]" : ""
-                                        }`}
+                                        className="transition-colors hover:bg-[#F2F2F2]"
                                     >
-                                        <td className="px-6 py-4 font-medium text-gray-800 text-center">
-                                            {job.userID?.userName ?? "—"}
+                                        <td className="px-6 py-4 font-medium text-gray-800">
+                                            <div className="flex items-center gap-3 ml-12">
+                                                <div className="w-10 h-10 rounded-full flex items-center justify-center bg-blue-50 text-blue-700 font-semibold">
+                                                    {job.userID?.userName?.charAt(0).toUpperCase() ?? "U"}
+                                                </div>
+                                                <span>{job.userID?.userName ?? "—"}</span>
+                                            </div>
+                                        </td>
+                                        <td className="px-6 py-4 text-gray-500 text-center">
+                                            {new Date(job.createdAt).toLocaleDateString("en-US", {
+                                                month: "short",
+                                                day: "numeric",
+                                                year: "numeric",
+                                            })}
                                         </td>
                                         <td className="px-6 py-4 text-center">
                                             <span
                                                 className={`inline-block rounded-full px-3 py-1 text-xs font-semibold capitalize ${statusStyles[job.status]}`}
                                             >
-                                                {job.status}
+                                                {job.status.toUpperCase()}
                                             </span>
                                         </td>
-                                        <td className="px-6 py-4 text-gray-500 text-center">
-                                            {new Date(job.createdAt).toLocaleDateString("en-GB", {
-                                                day: "numeric",
-                                                month: "short",
-                                                year: "numeric",
-                                            })}
-                                        </td>
+                                        
                                         <td className="px-6 py-4">
-                                            <div className="flex items-center gap-20">
+                                            <div className="flex items-center gap-30">
                                                 <button
                                                     onClick={() => {
                                                         setSelectedJob(job);
                                                         setIsJobReqOpen(true);
                                                     }}
-                                                    className={`rounded-full bg-[#0065FF] px-3 py-1.5 text-xs font-semibold text-white hover:bg-[#004CCE] transition-colors ${
-                                            job.status === "pending" ? "bg-[#FFA902] hover:bg-[#FF8C00]" : ""
-                                        }`}
+                                                    className="rounded-lg bg-[#0065FF] px-3 py-1.5 text-sm  text-white hover:bg-[#004CCE] transition-colors"
                                                 >
                                                     Details
                                                 </button>
@@ -275,9 +277,9 @@ export default function MyJobs() {
                                                 {job.status === "completed" && (
                                                     <button
                                                         onClick={() => openRating(job._id)}
-                                                        className="rounded-full bg-[#FFA902] px-1.5 py-1.5 text-xs font-semibold text-white hover:bg-[#FF8C00] transition-colors"
+                                                        className="rounded-full bg-[#FFD665] px-1.5 py-1.5 text-xs font-semibold text-white hover:bg-[#FF8C00] transition-colors"
                                                     >
-                                                        <StarIcon className="w-1 h-1  inline" />                                                    </button>
+                                                        <StarIcon className="w-1 h-1 text-[#FFA902] inline" />                                                    </button>
                                                 )}
                                             </div>
                                         </td>

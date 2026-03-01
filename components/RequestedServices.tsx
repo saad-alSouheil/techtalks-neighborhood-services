@@ -127,13 +127,14 @@ export default function RequestedServices({ userID }: Props) {
                     <div className="overflow-x-auto">
                         <table className="w-full text-left border-collapse">
                             <thead>
-                                <tr className="bg-gray-50/50 text-xs font-bold text-gray-500 uppercase tracking-wider border-b border-gray-100">
-                                    <th className="px-8 py-5 text-center">Provider</th>
-                                    <th className="px-8 py-5 text-center">Service</th>
-                                    <th className="px-8 py-5 text-center">Date Booked</th>
-                                    <th className="px-8 py-5 text-center">Price</th>
-                                    <th className="px-8 py-5 text-center">Status</th>
-                                    <th className="px-8 py-5 text-center">Review</th>
+                                <tr className=" tbg-gray-50 text-left text-xs font-semibold text-gray-500 uppercaseracking-wide">
+                                    <th className="px-6 py-3">Service</th>
+                                    <th className="px-6 py-3">Provider</th>
+                                    <th className="px-6 py-3">Phone</th>
+                                    <th className="px-6 py-3">Price</th>
+                                    <th className="px-6 py-3">Date Booked</th>
+                                    <th className="px-6 py-3">Status</th>
+                                    <th className="px-6 py-3">Action</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-100/80">
