@@ -1,11 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useAuthStore } from "@/store/useAuthStore";
 
 export default function Navbar() {
   const pathname = usePathname();
+  const router = useRouter();
 
   const user = useAuthStore((state) => state.user);
   const clearUser = useAuthStore((state) => state.clearUser);
@@ -16,7 +17,6 @@ export default function Navbar() {
     clearUser();   // instant UI update
     window.location.href = "/"; // Force hard refresh to wipe Next.js cache completely
     localStorage.removeItem("lastActivityTime"); // clear inactivity tracking
-    router.push("/");
   };
 
   return (
