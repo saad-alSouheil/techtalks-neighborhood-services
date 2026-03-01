@@ -1,14 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useAuthStore } from "@/store/useAuthStore";
 
 export default function Navbar() {
   const pathname = usePathname();
+  const router = useRouter();
 
   const user = useAuthStore((state) => state.user);
-  const isAuthInitialized = useAuthStore((state) => state.isAuthInitialized);
   const clearUser = useAuthStore((state) => state.clearUser);
 
   const handleLogout = async () => {
@@ -26,9 +26,7 @@ export default function Navbar() {
           MyLocalService
         </p>
 
-        {!isAuthInitialized ? (
-          <div className="flex-1"></div> // placeholder to keep flex spacing
-        ) : !user && (
+        {!user && (
           <div className="flex items-center gap-3 justify-center flex-1">
             <Link
               href="/"
@@ -53,9 +51,7 @@ export default function Navbar() {
         )}
 
         <div className="flex-1 flex justify-end">
-          {!isAuthInitialized ? (
-            <div className="w-24 h-11 bg-gray-100 animate-pulse rounded-full"></div> // Skeleton loader
-          ) : user ? (
+          {user ? (
             <button
               onClick={handleLogout}
               className="px-5 py-2 rounded-full bg-red-500 text-white hover:bg-red-600"

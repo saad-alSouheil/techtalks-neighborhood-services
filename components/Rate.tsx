@@ -1,8 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import CloseIcon from '@mui/icons-material/Close';
-import StarRateIcon from '@mui/icons-material/StarRate';
+import "./Rate.css";
 
 interface RatePopupProps {
   isOpen: boolean;
@@ -31,19 +30,6 @@ export default function RatePopup({ isOpen, onClose, jobID, userID, providerID, 
     window.addEventListener("keydown", handleEsc);
     return () => window.removeEventListener("keydown", handleEsc);
   }, [isOpen, onClose]);
-
-  // Lock body scroll when open
-  useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "unset";
-    }
-
-    return () => {
-      document.body.style.overflow = "unset";
-    };
-  }, [isOpen]);
 
   // Reset form when popup closes
   useEffect(() => {
@@ -125,105 +111,75 @@ export default function RatePopup({ isOpen, onClose, jobID, userID, providerID, 
   };
 
   return (
-    <div className="fixed inset-0 z-9999 flex items-center justify-center p-4 sm:p-6">
-      {/* Backdrop */}
-      <div
-        className="fixed inset-0 bg-gray-900/40 backdrop-blur-sm transition-opacity"
-        onClick={onClose}
-        aria-hidden="true"
-      ></div>
+    <div className="rate-overlay">
+      { }
+      <div className="rate-backdrop" onClick={onClose}></div>
 
-      {/* Modal Content */}
-      <div
-        className="relative w-full max-w-lg bg-white rounded-3xl shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200"
-        role="dialog"
-        aria-modal="true"
-      >
-        {/* Header */}
-        <div className="bg-linear-to-r from-purple-50 to-white px-8 py-6 border-b border-gray-100 flex justify-between items-center">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-purple-100 rounded-xl">
-              <StarRateIcon className="text-purple-600" />
-            </div>
-            <h2 className="text-2xl font-bold text-gray-900 tracking-tight">Review Service</h2>
-          </div>
-          <button
-            className="p-2 rounded-full text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
-            onClick={onClose}
-            aria-label="Close"
-          >
-            <CloseIcon fontSize="small" />
-          </button>
-        </div>
+      <div className="rate-modal" role="dialog" aria-modal="true">
+        <button className="rate-close" onClick={onClose} aria-label="Close">
+          ✕
+        </button>
 
-        {/* Body */}
-        <form className="px-8 py-6 flex flex-col gap-6" onSubmit={handleSubmit}>
+        <h2 className="rate-title">Rate the Service</h2>
+        <div className="rate-divider"></div>
 
-          <div className="flex flex-col gap-4">
-            <div className="flex items-center justify-between">
-              <label className="text-lg font-semibold text-gray-800">Reliability</label>
-              <input
-                className="w-24 px-4 py-2 border border-gray-200 rounded-xl text-center text-lg font-medium text-gray-900 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
-                type="number"
-                min="1"
-                max="5"
-                placeholder="1 - 5"
-                value={reliability}
-                onChange={(e) => setReliability(clamp1to5(e.target.value))}
-              />
-            </div>
-
-            <div className="flex items-center justify-between">
-              <label className="text-lg font-semibold text-gray-800">Punctuality</label>
-              <input
-                className="w-24 px-4 py-2 border border-gray-200 rounded-xl text-center text-lg font-medium text-gray-900 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
-                type="number"
-                min="1"
-                max="5"
-                placeholder="1 - 5"
-                value={punctuality}
-                onChange={(e) => setPunctuality(clamp1to5(e.target.value))}
-              />
-            </div>
-
-            <div className="flex items-center justify-between">
-              <label className="text-lg font-semibold text-gray-800">Price Honesty</label>
-              <input
-                className="w-24 px-4 py-2 border border-gray-200 rounded-xl text-center text-lg font-medium text-gray-900 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
-                type="number"
-                min="1"
-                max="5"
-                placeholder="1 - 5"
-                value={priceHonesty}
-                onChange={(e) => setPriceHonesty(clamp1to5(e.target.value))}
-              />
-            </div>
+        <form className="rate-form" onSubmit={handleSubmit}>
+          <div className="rate-row">
+            <label className="rate-label">Reliability</label>
+            <input
+              className="rate-input"
+              type="number"
+              min="1"
+              max="5"
+              placeholder="1 - 5"
+              value={reliability}
+              onChange={(e) => setReliability(clamp1to5(e.target.value))}
+            />
           </div>
 
-          <div className="flex flex-col gap-2 border-t border-gray-100 pt-6">
-            <label className="text-sm font-semibold tracking-wide text-gray-500 uppercase">Comment (Optional)</label>
+          <div className="rate-row">
+            <label className="rate-label">Punctuality</label>
+            <input
+              className="rate-input"
+              type="number"
+              min="1"
+              max="5"
+              placeholder="1 - 5"
+              value={punctuality}
+              onChange={(e) => setPunctuality(clamp1to5(e.target.value))}
+            />
+          </div>
+
+          <div className="rate-row">
+            <label className="rate-label">Price Honesty</label>
+            <input
+              className="rate-input"
+              type="number"
+              min="1"
+              max="5"
+              placeholder="1 - 5"
+              value={priceHonesty}
+              onChange={(e) => setPriceHonesty(clamp1to5(e.target.value))}
+            />
+          </div>
+
+          <div className="rate-comment">
+            <label className="rate-label-small">Comment</label>
             <textarea
-              className="w-full px-5 py-4 border border-gray-200 rounded-2xl text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all min-h-25 resize-none bg-gray-50/50"
-              placeholder="How was your experience?"
+              className="rate-textarea"
+              placeholder="Write your comment here"
               value={comment}
               onChange={(e) => setComment(e.target.value)}
             ></textarea>
           </div>
 
           {error && (
-            <div className="p-4 bg-red-50 rounded-xl flex items-center text-red-600 text-sm font-medium">
-              <span className="mr-2">⚠️</span> {error}
-            </div>
+            <p className="text-red-500 text-sm mt-1">{error}</p>
           )}
 
-          <div className="pt-4 pb-2">
-            <button
-              className={`w-full py-4 rounded-xl text-white font-bold text-lg shadow-sm transform transition-all active:scale-[0.98] ${isSubmitting ? "bg-purple-400 cursor-not-allowed" : "bg-purple-600 hover:bg-purple-700 hover:shadow-md"
-                }`}
-              type="submit"
-              disabled={isSubmitting}
-            >
-              {isSubmitting ? "Submitting Review..." : "Submit Review"}
+          <div className="rate-actions">
+            <button className="rate-submit" type="submit" disabled={isSubmitting}>
+              {isSubmitting ? "Submitting…" : "Submit"}
             </button>
           </div>
         </form>

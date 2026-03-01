@@ -18,9 +18,9 @@ export async function middleware(req: NextRequest) {
         }
     }
 
-    // If the user is logged in and tries to access login, signup, or home, redirect them to their profile
-    if (isTokenValid && (path === '/' || path === '/auth/login' || path === '/auth/signup')) {
-        return NextResponse.redirect(new URL('/providers', req.url));
+    // If the user is logged in and tries to access login or signup, redirect them to their profile
+    if (isTokenValid && (path === '/auth/login' || path === '/auth/signup')) {
+        return NextResponse.redirect(new URL('/profile', req.url));
     }
 
     // If the user is NOT logged in legitimately and tries to access protected routes, redirect to login
@@ -39,7 +39,6 @@ export async function middleware(req: NextRequest) {
 
 export const config = {
     matcher: [
-        '/',
         '/auth/login',
         '/auth/signup',
         '/profile/:path*',
