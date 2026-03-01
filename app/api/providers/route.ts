@@ -18,12 +18,15 @@ export async function GET(req: Request) {
         const service = searchParams.get('service');
         const query = searchParams.get('query'); // Name or description search
         const userID = searchParams.get('userID'); // Filter by provider's userID
+        const excludeUserID = searchParams.get('excludeUserID'); // Exclude a specific user
 
         const filter: QueryFilter<IProvider> = {};
 
         // 0. User ID Filter (get provider for a specific user)
         if (userID) {
             filter.userID = userID;
+        } else if (excludeUserID) {
+            filter.userID = { $ne: excludeUserID };
         }
 
         // 1. Service Type Filter

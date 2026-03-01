@@ -60,6 +60,8 @@ export default function ServicesPage() {
       }
       if (selectedNeighborhood)
         query.push(`neighborhood=${encodeURIComponent(selectedNeighborhood)}`);
+      if (user?._id)
+        query.push(`excludeUserID=${user._id}`);
 
       const queryString = query.length ? `?${query.join("&")}` : "";
 
@@ -162,7 +164,7 @@ export default function ServicesPage() {
           </select>
         </div>
 
-        
+
 
         {/* Providers Grid */}
         {loading ? (

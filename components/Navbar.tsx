@@ -1,12 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter, usePathname } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { useAuthStore } from "@/store/useAuthStore";
 
 export default function Navbar() {
   const pathname = usePathname();
-  const router = useRouter();
 
   const user = useAuthStore((state) => state.user);
   const clearUser = useAuthStore((state) => state.clearUser);
@@ -15,6 +14,7 @@ export default function Navbar() {
     await fetch("/api/auth/logout", { method: "POST" });
 
     clearUser();   // instant UI update
+    window.location.href = "/"; // Force hard refresh to wipe Next.js cache completely
     localStorage.removeItem("lastActivityTime"); // clear inactivity tracking
     router.push("/");
   };
@@ -30,22 +30,20 @@ export default function Navbar() {
           <div className="flex items-center gap-3 justify-center flex-1">
             <Link
               href="/"
-              className={`text-lg px-5 py-2 rounded-full ${
-                pathname === "/"
-                  ? "bg-[#f59e0b] text-white"
-                  : "text-gray-900 hover:text-gray-600"
-              }`}
+              className={`text-lg px-5 py-2 rounded-full ${pathname === "/"
+                ? "bg-[#f59e0b] text-white"
+                : "text-gray-900 hover:text-gray-600"
+                }`}
             >
               Home
             </Link>
 
             <Link
               href="/about"
-              className={`text-lg px-5 py-2 rounded-full ${
-                pathname === "/about"
-                  ? "bg-[#f59e0b] text-white"
-                  : "text-gray-900 hover:text-gray-600"
-              }`}
+              className={`text-lg px-5 py-2 rounded-full ${pathname === "/about"
+                ? "bg-[#f59e0b] text-white"
+                : "text-gray-900 hover:text-gray-600"
+                }`}
             >
               About
             </Link>

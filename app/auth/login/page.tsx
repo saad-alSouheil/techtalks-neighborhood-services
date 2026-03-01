@@ -26,7 +26,7 @@ export default function LoginPage() {
       });
       if (!res.ok) {
         const data = await res.json();
-        throw new Error(data.message || "Login failed");
+        throw new Error(data.message || data.error || "Login failed");
       }
       const userData = await res.json();
       setUser({ _id: userData.id, userName: userData.userName, isProvider: userData.isProvider });
