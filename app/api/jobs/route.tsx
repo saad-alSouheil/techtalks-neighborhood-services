@@ -54,6 +54,13 @@ export async function GET(req: Request) {
 export async function PATCH(req: Request) {
     try {
         await connectDB();
+
+        const { getCurrentUser } = await import('@/lib/getCurrentUser');
+        const user = await getCurrentUser();
+        if (!user) {
+            return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
+        }
+
         const body = await req.json();
         const { jobID, status, price } = body;
 
@@ -62,6 +69,21 @@ export async function PATCH(req: Request) {
                 { error: 'Missing required fields: jobID, status' },
                 { status: 400 }
             );
+        }
+
+        const job = await Job.findById(jobID);
+        if (!job) {
+            return NextResponse.json({ error: 'Job not found' }, { status: 404 });
+        }
+
+        const Provider = (await import('@/models/Provider')).default;
+        const provider = await Provider.findOne({ userID: user._id });
+
+        const isCustomer = job.userID.toString() === user._id.toString();
+        const isProvider = provider ? job.providerID.toString() === provider._id.toString() : false;
+
+        if (!isCustomer && !isProvider) {
+            return NextResponse.json({ error: 'Unauthorized to modify this job' }, { status: 403 });
         }
 
         const updateData: { status: string; completedDate?: Date; price?: number } = { status };

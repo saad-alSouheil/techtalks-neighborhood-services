@@ -6,6 +6,7 @@ import PersonIcon from "@mui/icons-material/Person";
 import VerifiedIcon from "@mui/icons-material/Verified";
 import PhoneIcon from "@mui/icons-material/Phone";
 import LocationOnIcon from "@mui/icons-material/LocationOn";
+import StarsIcon from "@mui/icons-material/Stars";
 import RequestedServices from "@/components/RequestedServices";
 import MyJobs from "@/components/MyJobs";
 
@@ -16,6 +17,7 @@ const Profile = () => {
     _id: string;
     serviceType: string;
     description: string;
+    trustScore?: number;
   } | null>(null);
 
   useEffect(() => {
@@ -54,11 +56,21 @@ const Profile = () => {
             {/* Name with verification */}
             <div className="flex items-center gap-2">
               <h1 className="text-2xl font-bold text-gray-900">{profile.name}</h1>
-              <VerifiedIcon className="h-6 w-6 text-yellow-500" />
+              {user?.isProvider && (providerDetails?.trustScore ?? 0) >= 4 && (
+                <VerifiedIcon className="h-6 w-6 text-yellow-500" titleAccess="Top Rated Provider" />
+              )}
             </div>
 
-            {/* Profession */}
-            <p className="text-lg font-medium text-gray-600">{profile.profession}</p>
+            {/* Profession and Trust Score */}
+            <div className="flex items-center gap-4">
+              <p className="text-lg font-medium text-gray-600">{profile.profession}</p>
+              {user?.isProvider && providerDetails?.trustScore !== undefined && (
+                <div className="flex items-center gap-1 text-[#FFA902] font-semibold bg-orange-50 px-3 py-1 rounded-full border border-orange-100 shadow-sm">
+                  <StarsIcon className="h-5 w-5" />
+                  <span>{providerDetails.trustScore > 0 ? providerDetails.trustScore.toFixed(1) : "New"}</span>
+                </div>
+              )}
+            </div>
 
             {/* Contact info */}
             <div className="flex flex-col gap-2 sm:flex-row sm:gap-6">

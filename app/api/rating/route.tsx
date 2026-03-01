@@ -22,11 +22,18 @@ export async function POST(req: Request) {
     try {
         await connectDB();
 
+        const { getCurrentUser } = await import('@/lib/getCurrentUser');
+        const user = await getCurrentUser();
+        if (!user) {
+            return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
+        }
+
         const body: RatingBody = await req.json();
-        const { jobID, userID, providerID, reliability, punctuality, priceHonesty, comment } = body;
+        const { jobID, providerID, reliability, punctuality, priceHonesty, comment } = body;
+        const userID = user._id; // Force using the securely authenticated token ID!
 
         // Validate required fields
-        if (!jobID || !userID || !providerID || !reliability || !punctuality || !priceHonesty) {
+        if (!jobID || !providerID || !reliability || !punctuality || !priceHonesty) {
             return NextResponse.json(
                 { error: "Missing required fields" },
                 { status: 400 }
