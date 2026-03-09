@@ -31,3 +31,38 @@ export async function GET(
     );
   }
 }
+
+export async function PUT(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    await connectDB();
+
+    const { id } = await params;
+    const body = await request.json();
+    const { userName, phone, neighborhoodID } = body;
+
+    const updatedUser = await User.findByIdAndUpdate(
+      id,
+      {
+        ...(userName && { userName }),
+        ...(phone && { phone }),
+        ...(neighborhoodID && { neighborhoodID }),
+      },
+      { new: true }
+    );
+
+    if (!updatedUser) {
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
+    }
+
+    return NextResponse.json(updatedUser, { status: 200 });
+  } catch (error) {
+    console.error("Error updating user:", error);
+    return NextResponse.json(
+      { error: "Failed to update user" },
+      { status: 500 }
+    );
+  }
+}

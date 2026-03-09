@@ -29,3 +29,36 @@ export async function GET(
   }
 }
 
+export async function PUT(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    await connectDB();
+
+    const { id } = await params;
+    const body = await request.json();
+    const { description } = body;
+
+    const updatedProvider = await Provider.findByIdAndUpdate(
+      id,
+      { description },
+      { new: true }
+    );
+
+    if (!updatedProvider) {
+      return NextResponse.json(
+        { error: "Provider not found" },
+        { status: 404 }
+      );
+    }
+
+    return NextResponse.json(updatedProvider, { status: 200 });
+  } catch (error) {
+    console.error("Error updating provider:", error);
+    return NextResponse.json(
+      { error: "Failed to update provider" },
+      { status: 500 }
+    );
+  }
+}

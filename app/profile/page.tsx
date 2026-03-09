@@ -8,6 +8,7 @@ import StarsIcon from "@mui/icons-material/Stars";
 import RequestedServices from "@/components/RequestedServices";
 import MyJobs from "@/components/MyJobs";
 import FmdGoodIcon from '@mui/icons-material/FmdGood';
+import EditSquareIcon from '@mui/icons-material/EditSquare';
 
 const Profile = () => {
   const user = useAuthStore((state: AuthState) => state.user);
@@ -33,9 +34,25 @@ const Profile = () => {
     "bg-[#fcea42]",
   ];
 
+  //states for the edit profile modal
+  const [isEditOpen, setIsEditOpen] = useState(false);
+const [editName, setEditName] = useState("");
+const [editPhone, setEditPhone] = useState("");
+const [editDescription, setEditDescription] = useState("");
+const [editNeighborhoodID, setEditNeighborhoodID] = useState("");
+const [neighborhoods, setNeighborhoods] = useState<any[]>([]);
+const [saving, setSaving] = useState(false);
+
   function getRandomColor() {
     return colors[Math.floor(Math.random() * colors.length)];
   }
+
+  useEffect(() => {
+  fetch("/api/neighborhood")
+    .then((res) => res.json())
+    .then((data) => setNeighborhoods(data))
+    .catch((err) => console.error("Error loading neighborhoods", err));
+}, []);
 
   useEffect(() => {
     // Set avatar color on mount
@@ -108,6 +125,19 @@ const Profile = () => {
               {user?.isProvider && (providerDetails?.trustScore ?? 0) >= 4 && (
                 <VerifiedIcon className="h-15 w-15 text-[#FFA902]" titleAccess="Top Rated Provider" />
               )}
+
+              <button
+                onClick={() => {
+                  setEditName(profile.name);
+                  setEditPhone(profile.phone);
+                  setEditDescription(profile.description);
+                  setIsEditOpen(true);
+                }}
+                className="ml-auto text-[#007BFF] px-4 py-2 hover:text-[#FFA902] transition"
+              >
+                <EditSquareIcon className="h-5 w-5" />
+            </button>
+
             </div>
               <p className="text-lg font-medium text-gray-600">{profile.profession.toLocaleUpperCase()}</p>
 
@@ -150,6 +180,136 @@ const Profile = () => {
 
       {/* Requested Services Table */}
       {user?._id && <RequestedServices userID={user._id} />}
+
+        {/* Edit bio modal */}
+        {isEditOpen && (
+  <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+    <div className="bg-white rounded-2xl p-8 w-full max-w-lg shadow-xl space-y-4">
+      
+      <h2 className="text-3xl font-bold text-[#FFA902]">Edit Profile</h2>
+
+      <input
+        value={editName}
+        onChange={(e) => setEditName(e.target.value)}
+        placeholder="Name"
+        className="w-full border border-gray-100 p-3 rounded-full"
+      />
+
+      <input
+        value={editPhone}
+        onChange={(e) => setEditPhone(e.target.value)}
+        placeholder="Phone"
+        className="w-full border border-gray-100 p-3 rounded-full"
+      />
+
+      <select
+        value={editNeighborhoodID}
+        onChange={(e) => setEditNeighborhoodID(e.target.value)}
+        className="w-full border border-gray-100 p-3 rounded-full"
+      >
+        <option value="">Select location</option>
+        {neighborhoods.map((n) => (
+          <option key={n.id} value={n.id}>
+            {n.name}, {n.city}
+          </option>
+        ))}
+      </select>
+
+      {user?.isProvider && (
+        <><p className="mt-5 text-sm text-gray-500">Description</p><textarea
+                value={editDescription}
+                onChange={(e) => setEditDescription(e.target.value)}
+                placeholder="Description"
+                className="w-full border border-gray-100 p-3 rounded-lg"
+                rows={4} /></>
+      )}
+
+      <div className="flex justify-end gap-4 pt-4">
+        <button
+          onClick={() => setIsEditOpen(false)}
+          className="px-4 py-2 rounded-lg border border-gray-300 hover:bg-gray-100 transition"
+        >
+          Cancel
+        </button>
+
+        <button
+          onClick={async () => {
+            try {
+              setSaving(true);
+
+              //Update user
+              const userRes = await fetch(`/api/users/${user?._id}`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  userName: editName,
+                  phone: editPhone,
+                  neighborhoodID: editNeighborhoodID,
+                }),
+              });
+
+              const updatedUser = await userRes.json();
+
+              //Update provider description if provider
+              let updatedProvider = null;
+
+              if (user?.isProvider && providerDetails?._id) {
+                const providerRes = await fetch(
+                  `/api/providers/${providerDetails._id}`,
+                  {
+                    method: "PUT",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                      description: editDescription,
+                    }),
+                  }
+                );
+
+                updatedProvider = await providerRes.json();
+              }
+
+              //Update local state instead of reload
+
+              if (updatedUser.phone) {
+                setPhone(updatedUser.phone);
+              }
+
+              // Update location label immediately
+              if (editNeighborhoodID) {
+                const selected = neighborhoods.find(
+                  (n) => String(n.id) === String(editNeighborhoodID)
+                );
+                if (selected) {
+                  setLocationName(
+                    `${selected.name}${selected.city ? `, ${selected.city}` : ""}`
+                  );
+                }
+              }
+
+              if (updatedProvider?.description) {
+                setProviderDetails((prev) =>
+                  prev ? { ...prev, description: updatedProvider.description } : prev
+                );
+              }
+
+              //Close modal
+              setIsEditOpen(false);
+
+            } catch (err) {
+              console.error("Update failed", err);
+            } finally {
+              setSaving(false);
+            }
+          }}
+
+          className="bg-[#FFA902] hover:bg-[#FFA902]/80 text-white px-6 py-2 rounded-lg"
+        >
+          {saving ? "Saving..." : "Save"}
+        </button>
+      </div>
+    </div>
+  </div>
+)}
     </div>
   );
 };
