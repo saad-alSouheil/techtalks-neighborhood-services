@@ -63,6 +63,37 @@ export default function RequestedServices({ userID }: Props) {
         fetchJobs();
     }, [userID, fetchJobs]);
 
+    const handleAcceptPrice = async (jobID: string) => {
+        try {
+            const res = await fetch("/api/jobs", {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ jobID, status: "confirmed" }),
+            });
+            if (!res.ok) throw new Error("Failed to accept price");
+            fetchJobs();
+        } catch (err: unknown) {
+            console.error(err);
+            alert("Failed to accept price");
+        }
+    };
+
+    const handleDeclinePrice = async (jobID: string) => {
+        if (!confirm("Are you sure you want to decline this quote? The job will be cancelled.")) return;
+        try {
+            const res = await fetch("/api/jobs", {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ jobID, status: "cancelled" }),
+            });
+            if (!res.ok) throw new Error("Failed to decline price");
+            fetchJobs();
+        } catch (err: unknown) {
+            console.error(err);
+            alert("Failed to decline price");
+        }
+    };
+
     const openRatePopup = (job: Job) => {
         setSelectedJobID(job._id);
         setSelectedProviderID(job.providerID._id);
@@ -186,10 +217,26 @@ export default function RequestedServices({ userID }: Props) {
                                                 >
                                                     Mark Done
                                                 </button>
+                                            ) : job.status === "pending" && job.price !== undefined ? (
+                                                <div className="flex gap-2 justify-center">
+                                                    <button
+                                                        onClick={() => handleAcceptPrice(job._id)}
+                                                        className="rounded-full bg-[#0065FF] px-4 py-1.5 text-sm font-semibold text-white hover:bg-[#0052cc] transition-colors"
+                                                    >
+                                                        Accept
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleDeclinePrice(job._id)}
+                                                        className="rounded-full bg-red-500 px-4 py-1.5 text-sm font-semibold text-white hover:bg-red-600 transition-colors"
+                                                    >
+                                                        Decline
+                                                    </button>
+                                                </div>
                                             ) : (
                                                 <span className="text-gray-400 text-sm italic group-hover:text-gray-500 transition-colors">
                                                     {job.status === "cancelled" ? "Unavailable" :
-                                                        job.status === "completed" ? "Completed" : "Not ready"}
+                                                        job.status === "completed" ? "Completed" :
+                                                            job.status === "pending" && job.price === undefined ? "Awaiting Quote" : "Not ready"}
                                                 </span>
                                             )}
                                         </td>

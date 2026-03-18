@@ -26,9 +26,9 @@ interface Job {
 }
 
 const statusStyles: Record<JobStatus, string> = {
-    pending: "bg-[#F5FF66] text-yellow-800",
+    pending: "bg-yellow-100 text-yellow-700",
     confirmed: "bg-blue-100 text-blue-700",
-    completed: "bg-[#BFFFDF] text-green-700",
+    completed: "bg-green-100 text-green-700",
     cancelled: "bg-red-100 text-red-700",
 };
 
@@ -90,18 +90,18 @@ export default function MyJobs() {
     }, []);
 
     // Handlers invoked by JobReq modal
-    const handleModalAccept = useCallback(async (jobID: string, price: number) => {
+    const handleModalSubmitQuote = useCallback(async (jobID: string, price: number) => {
         try {
             const res = await fetch("/api/jobs", {
                 method: "PATCH",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ jobID, status: "confirmed", price }),
+                body: JSON.stringify({ jobID, price }), // Just set price, keep status pending
             });
-            if (!res.ok) throw new Error("Failed to accept job");
+            if (!res.ok) throw new Error("Failed to submit quote");
             // refresh list
             if (providerID) await fetchJobs(providerID);
         } catch (err: unknown) {
-            console.error("Error accepting job:", err);
+            console.error("Error submitting quote:", err);
             setError(err instanceof Error ? err.message : "Unknown error");
             throw err;
         }
@@ -199,89 +199,102 @@ export default function MyJobs() {
                 </div>
             )}
 
-            <div className="px-6 py-4 rounded-2xl border border-gray-200 bg-white shadow-md">
-                {/* Header */}
-                <div className="flex items-center gap-2 px-6 py-4 border-b border-gray-100">
-                    <h2 className="text-3xl font-bold text-gray-900">My Jobs</h2>
+            <div className="rounded-3xl border border-gray-200 bg-white shadow-lg overflow-hidden mt-6">
+                <div className="flex items-center justify-between px-8 py-6 border-b border-gray-100 bg-linear-to-r from-gray-50 to-white">
+                    <h2 className="text-xl font-bold text-gray-900 tracking-tight">My Jobs</h2>
                     {jobs.length > 0 && (
-                        <span className="ml-auto text-sm text-gray-700 bg-gray-50/50 px-5 py-1.5 rounded-full font-semibold">{jobs.length} total</span>
+                        <span className="bg-gray-100 text-gray-600 font-semibold px-4 py-1.5 rounded-full text-sm">
+                            {jobs.length} total
+                        </span>
                     )}
                 </div>
 
                 {/* States */}
                 {loading && (
-                    <p className="px-6 py-8 text-sm text-gray-400 text-center">Loading...</p>
+                    <div className="flex justify-center items-center py-20">
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#0065FF]"></div>
+                    </div>
                 )}
                 {error && (
-                    <p className="px-6 py-8 text-sm text-red-500 text-center">Error: {error}</p>
+                    <div className="mx-8 my-6 p-4 bg-red-50 rounded-2xl flex items-center text-red-600 text-sm font-medium">
+                        <span className="mr-2">⚠️</span> {error}
+                    </div>
                 )}
                 {!loading && !error && jobs.length === 0 && (
-                    <p className="px-6 py-8 text-sm text-gray-400 text-center">
-                        No jobs yet. Check back soon!
-                    </p>
+                    <div className="flex flex-col items-center justify-center py-20 px-6 text-center">
+                        <h3 className="text-lg font-semibold text-gray-900 mb-1">No jobs yet</h3>
+                        <p className="text-gray-500 max-w-sm">You haven&apos;t been hired for any services. Once a client books you, it will show up here.</p>
+                    </div>
                 )}
 
                 {/* Table */}
                 {!loading && jobs.length > 0 && (
                     <div className="overflow-x-auto">
-                        <table className="w-full min-w-max table-auto justify-center mx-auto">
+                        <table className="w-full text-left border-collapse">
                             <thead>
-                                <tr className="bg-gray-50/50 text-center border-b border-gray-200 uppercase text-sm font-semibold text-gray-500 tracking-wide">
-                                    <th className="px-6 py-3 ">Client</th>
-                                    <th className="px-6 py-3">Date Booked</th>
-                                    <th className="px-6 py-3">Status</th>
-                                    <th className="px-6 py-3 "></th>
+                                <tr className="bg-gray-50/50 text-xs font-bold text-gray-500 uppercase tracking-wider border-b border-gray-100">
+                                    <th className="px-8 py-5 text-center">Client</th>
+                                    <th className="px-8 py-5 text-center">Date Booked</th>
+                                    <th className="px-8 py-5 text-center">Status</th>
+                                    <th className="px-8 py-5 text-center">Action</th>
+                                    <th className="px-8 py-5 text-center">Rating</th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-gray-100">
+                            <tbody className="divide-y divide-gray-100/80">
                                 {jobs.map((job) => (
-                                    <tr
-                                        key={job._id}
-                                        className="transition-colors hover:bg-[#F2F2F2]"
-                                    >
-                                        <td className="px-6 py-4 font-medium text-gray-800">
-                                            <div className="flex items-center gap-3 ml-12">
-                                                <div className="w-10 h-10 rounded-full flex items-center justify-center bg-blue-50 text-blue-700 font-semibold">
-                                                    {job.userID?.userName?.charAt(0).toUpperCase() ?? "U"}
+                                    <tr key={job._id} className="hover:bg-gray-50/60 transition-colors group">
+                                        <td className="px-8 py-5">
+                                            <div className="flex items-center justify-start w-48 mx-auto gap-4">
+                                                <div className="h-9 w-9 rounded-full bg-[#f0f4ff] flex items-center justify-center text-[#0065FF] font-bold text-[13px] shrink-0">
+                                                    {(job.userID?.userName ?? "U").charAt(0).toUpperCase()}
                                                 </div>
-                                                <span>{job.userID?.userName ?? "—"}</span>
+                                                <div className="flex flex-col text-left">
+                                                    <span className="font-semibold text-gray-700 text-[15px] truncate">
+                                                        {job.userID?.userName ?? "—"}
+                                                    </span>
+                                                    <span className="text-sm text-gray-500">
+                                                        {job.userID?.phone ?? "No phone"}
+                                                    </span>
+                                                </div>
                                             </div>
                                         </td>
-                                        <td className="px-6 py-4 text-gray-500 text-center">
+                                        <td className="px-8 py-5 text-gray-500 font-medium text-center">
                                             {new Date(job.createdAt).toLocaleDateString("en-US", {
                                                 month: "short",
                                                 day: "numeric",
                                                 year: "numeric",
                                             })}
                                         </td>
-                                        <td className="px-6 py-4 text-center">
+                                        <td className="px-8 py-5 text-center">
                                             <span
-                                                className={`inline-block rounded-full px-3 py-1 text-xs font-semibold capitalize ${statusStyles[job.status]}`}
+                                                className={`inline-block rounded-full px-4 py-1.5 text-xs font-bold tracking-wide uppercase ${statusStyles[job.status]}`}
                                             >
-                                                {job.status.toUpperCase()}
+                                                {job.status}
                                             </span>
                                         </td>
-                                        
-                                        <td className="px-6 py-4">
-                                            <div className="flex items-center gap-30">
+                                        <td className="px-8 py-5 text-center">
+                                            <button
+                                                onClick={() => {
+                                                    setSelectedJob(job);
+                                                    setIsJobReqOpen(true);
+                                                }}
+                                                className="rounded-full bg-[#0065FF] px-6 py-2 text-sm font-semibold text-white shadow-sm hover:bg-[#0052cc] transition-colors"
+                                            >
+                                                Details
+                                            </button>
+                                        </td>
+                                        <td className="px-8 py-5 text-center">
+                                            {job.status === "completed" ? (
                                                 <button
-                                                    onClick={() => {
-                                                        setSelectedJob(job);
-                                                        setIsJobReqOpen(true);
-                                                    }}
-                                                    className="rounded-lg bg-[#0065FF] px-3 py-1.5 text-sm  text-white hover:bg-[#004CCE] transition-colors"
+                                                    onClick={() => openRating(job._id)}
+                                                    className="rounded-full bg-[#FFD665] p-2 shadow-sm hover:bg-[#FF8C00] transition-colors flex items-center justify-center mx-auto"
+                                                    title="View Rating"
                                                 >
-                                                    Details
+                                                    <StarIcon className="w-5 h-5 text-white" />
                                                 </button>
-
-                                                {job.status === "completed" && (
-                                                    <button
-                                                        onClick={() => openRating(job._id)}
-                                                        className="rounded-full bg-[#FFD665] px-1.5 py-1.5 text-xs font-semibold text-white hover:bg-[#FF8C00] transition-colors"
-                                                    >
-                                                        <StarIcon className="w-1 h-1 text-[#FFA902] inline" />                                                    </button>
-                                                )}
-                                            </div>
+                                            ) : (
+                                                <span className="text-gray-400 text-sm italic">—</span>
+                                            )}
                                         </td>
                                     </tr>
                                 ))}
@@ -299,7 +312,7 @@ export default function MyJobs() {
                     setSelectedJob(null);
                 }}
                 job={selectedJob}
-                onAccept={handleModalAccept}
+                onSubmitQuote={handleModalSubmitQuote}
                 onCancel={handleModalCancel}
             />
         </>
